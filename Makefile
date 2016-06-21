@@ -8,7 +8,7 @@
 SHELL:=/bin/bash
 
 # Variables used by the Makefile
-CC = colorgcc
+CC ?= $(shell command -v colorgcc || command -v gcc)
 LINKER = ld
 
 CFLAGS = -O2
