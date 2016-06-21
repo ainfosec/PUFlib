@@ -7,7 +7,7 @@
 #include <puflib.h>
 #include <string.h>
 
-static const module_info ** MODULES;
+extern module_info const * const PUFLIB_MODULES[];
 static void (*STATUS_CALLBACK)(char const * message) = NULL;
 
 #define PUFLIB_MODULE_SANITIZED_MAX (PUFLIB_MODULE_NAME_MAX * 2)
@@ -49,7 +49,7 @@ void sanitize_module_name(char * name, module_info const * module)
 
 module_info const * const * puflib_get_modules()
 {
-    return MODULES;
+    return PUFLIB_MODULES;
 }
 
 
