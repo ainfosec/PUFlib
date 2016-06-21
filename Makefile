@@ -30,6 +30,10 @@ MODULE_OBJECTS = ${MODULE_SOURCES:.c=.o}
 # List all the objects needed here
 OBJECTS = puflib.o module_list.o ${MODULE_OBJECTS}
 
+.PHONY: all clean
+
+all: ${SOFILE}
+
 # Include calculated dependencies
 -include ${OBJECTS:.o=.d}
 
@@ -38,7 +42,7 @@ OBJECTS = puflib.o module_list.o ${MODULE_OBJECTS}
 	${CC} -c  ${CFLAGS} $*.c -o $*.o
 	${CC} -MM ${CFLAGS} $*.c -o $*.d
 
-${SOFILE}: $(OBJECTS)
+${SOFILE}: ${OBJECTS}
 	${CC} ${LDFLAGS} $^ -o ${SOFILE}
 	ln -fs ${SOFILE} ${SONAME}.${SO_MAJ}
 	ln -fs ${SONAME}.${SO_MAJ} ${SONAME}
