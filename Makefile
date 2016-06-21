@@ -11,7 +11,7 @@ SHELL:=/bin/bash
 CC ?= $(shell command -v colorgcc || command -v gcc)
 LINKER = ld
 
-CFLAGS = -O2
+CFLAGS = -O2 -I. -g -Wall -fPIC
 
 # List all the objects needed here
 OBJECTS = puflib.o
