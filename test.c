@@ -11,8 +11,17 @@
 #include <stdio.h>
 #include <string.h>
 
+
+static void status_handler(char const * message)
+{
+    puts(message);
+}
+
+
 int main(int argc, char **argv)
 {
+    puflib_set_status_handler(&status_handler);
+
     if (argc == 1)
     {
         module_info const * const * modules = puflib_get_modules();

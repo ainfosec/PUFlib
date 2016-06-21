@@ -16,7 +16,8 @@
 enum provisioning_status {
   NOT_SUPPORTED,
   INCOMPLETE,
-  COMPLETED
+  COMPLETED,
+  PROVISION_ERROR,
 };
 
 struct module_info_s {
@@ -69,7 +70,6 @@ void puflib_set_status_handler(void (*callback)(char const * message));
  * resolve this.
  *
  * @param module - the calling module, for tracking ownership
- * @param mode - mode with which the file shall be opened; see fopen()
  * @return opened file or NULL on error; caller is responsible for calling fclose()
  */
 FILE * puflib_create_nv_store(module_info const * module);
@@ -83,7 +83,6 @@ FILE * puflib_create_nv_store(module_info const * module);
  * errno.
  *
  * @param module - the calling module, for tracking ownership
- * @param mode - mode with which the file shall be opened; see fopen()
  * @return opened file or NULL on error; caller is responsible for calling fclose()
  */
 FILE * puflib_get_nv_store(module_info const * module);
