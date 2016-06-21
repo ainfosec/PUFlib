@@ -105,8 +105,8 @@ int puflib_delete_nv_store(module_info const * module);
  */
 enum puflib_status_level {
     STATUS_INFO,
-    STATUS_WARNING,
-    STATUS_CRITICAL,
+    STATUS_WARN,
+    STATUS_ERROR,
 };
 
 /**

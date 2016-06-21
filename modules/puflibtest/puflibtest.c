@@ -50,7 +50,7 @@ static enum provisioning_status provision()
         puflib_report(this, STATUS_INFO, "could not create or NV store exists, continuing provision");
         f = puflib_get_nv_store(this);
         if (!f) {
-            puflib_report(this, STATUS_CRITICAL, strerror(errno));
+            puflib_report(this, STATUS_ERROR, strerror(errno));
             return PROVISION_ERROR;
         } else {
             return provision_continue(f);
@@ -90,14 +90,14 @@ static enum provisioning_status provision_continue(FILE *f)
         puflib_report(this, STATUS_INFO, "complete");
         puflib_report(this, STATUS_INFO, "deleting NV store");
         if (puflib_delete_nv_store(this)) {
-            puflib_report(this, STATUS_CRITICAL, strerror(errno));
+            puflib_report(this, STATUS_ERROR, strerror(errno));
             return PROVISION_ERROR;
         } else {
             return COMPLETED;
         }
 
     default:
-        puflib_report(this, STATUS_WARNING, "NV store corrupted");
+        puflib_report(this, STATUS_WARN, "NV store corrupted");
         return PROVISION_ERROR;
     }
 

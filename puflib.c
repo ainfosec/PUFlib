@@ -226,10 +226,10 @@ void puflib_report(module_info const * module, enum puflib_status_level level,
     case STATUS_INFO:
         level_as_string = "info";
         break;
-    case STATUS_WARNING:
+    case STATUS_WARN:
         level_as_string = "warn";
         break;
-    case STATUS_CRITICAL:
+    case STATUS_ERROR:
     default:
         level_as_string = "error";
         break;
