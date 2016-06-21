@@ -1,8 +1,9 @@
-# Object files
+# Object files, other compile debris
 *.o
 *.ko
 *.obj
 *.elf
+*.d
 test
 
 # Precompiled Headers
