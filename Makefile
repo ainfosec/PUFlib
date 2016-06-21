@@ -52,6 +52,6 @@ module_list.c:
 clean:
 	rm -f ${SONAME}.${SO_MAJ}.${SO_MIN} ${SONAME}.${SO_MAJ} ${SONAME}
 	rm -f test
-	rm -f ${OBJECTS}
-	rm -f ${OBJECTS:.o=.d}
+	rm -f ${OBJECTS} test.o
+	rm -f ${OBJECTS:.o=.d} test.d
 	rm -f module_list.c
