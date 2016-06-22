@@ -34,15 +34,16 @@ static char * get_nv_filename(module_info const * module)
 {
     char path_sep[2] = {puflib_get_path_sep(), 0};
     char const *nvstore = puflib_get_nv_store_path();
-    char * buf = malloc(strlen(nvstore) + strlen(module->name) + 2);
+    size_t buflen = strlen(nvstore) + strlen(module->name) + 2;
+    char * buf = malloc(buflen);
 
     if (!buf) {
         return NULL;
     }
 
-    strcpy(buf, nvstore);
-    strcat(buf, path_sep);
-    strcat(buf, module->name);
+    strncpy(buf, nvstore, buflen);
+    strncat(buf, path_sep, buflen);
+    strncat(buf, module->name, buflen);
     return buf;
 }
 
