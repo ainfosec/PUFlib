@@ -149,6 +149,17 @@ module_info const * const * puflib_get_modules()
 }
 
 
+module_info const * puflib_get_module( char const * name )
+{
+    for (size_t i = 0; PUFLIB_MODULES[i]; ++i) {
+        if (!strcmp(PUFLIB_MODULES[i]->name, name)) {
+            return PUFLIB_MODULES[i];
+        }
+    }
+    return NULL;
+}
+
+
 void puflib_set_status_handler(void (*callback)(char const * message))
 {
     STATUS_CALLBACK = callback;

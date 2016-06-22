@@ -36,18 +36,16 @@ int main(int argc, char **argv)
         return 0;
 
     } else {
-        module_info const * const * modules = puflib_get_modules();
-        module_info const * module = NULL;
-
-        for (size_t i = 0; modules[i]; ++i) {
-            if (!strcmp(modules[i]->name, argv[1])) {
-                module = modules[i];
-            }
-        }
+        module_info const * module = puflib_get_module(argv[1]);
 
         if (module) {
-            module->provision();
-            return 0;
+            if (module->is_hw_supported()) {
+                module->provision();
+                return 0;
+            } else {
+                printf("module does not support this hardware\n");
+                return 1;
+            }
         } else {
             printf("no module found with name: %s\n", argv[1]);
             return 1;

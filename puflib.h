@@ -40,6 +40,13 @@ typedef struct module_info_s module_info;
 module_info const * const * puflib_get_modules();
 
 /**
+ * Return a module by name, or NULL if it doesn't exist. Note that a module
+ * being returned does not imply that the running system is supported by it, so
+ * ->is_hw_supported() must be called on any module before using it.
+ */
+module_info const * puflib_get_module( char const * name );
+
+/**
  * Set a callback function to receive status messages. This defaults to NULL,
  * so any messages generated before this is called will be dropped!
  *
