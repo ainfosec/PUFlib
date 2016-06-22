@@ -14,6 +14,6 @@
  *
  * @return new string, or NULL on error.
  */
-char * duplicate_string(char const * src);
+char * puflib_duplicate_string(char const * src);
 
 #endif // _PUFLIB_MISC_H_

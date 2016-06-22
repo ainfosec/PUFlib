@@ -7,7 +7,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-char * duplicate_string(char const * src)
+char * puflib_duplicate_string(char const * src)
 {
     // Count the length once, then use it as a bound for the data copy. This
     // avoids writing past the end of dest if src is modified by a thread while

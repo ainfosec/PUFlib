@@ -32,8 +32,8 @@ static char * get_nv_filename(module_info const * module);
  */
 static char * get_nv_filename(module_info const * module)
 {
-    char path_sep[2] = {get_path_sep(), 0};
-    char const *nvstore = get_nv_store_path();
+    char path_sep[2] = {puflib_get_path_sep(), 0};
+    char const *nvstore = puflib_get_nv_store_path();
     char * buf = malloc(strlen(nvstore) + strlen(module->name) + 2);
 
     if (!buf) {
@@ -77,12 +77,12 @@ FILE * puflib_create_nv_store(module_info const * module)
         return NULL;
     }
 
-    if (create_directory_tree(get_nv_store_path())) {
+    if (puflib_create_directory_tree(puflib_get_nv_store_path())) {
         free(filename);
         return NULL;
     }
 
-    FILE *f = create_and_open(filename, "r+");
+    FILE *f = puflib_create_and_open(filename, "r+");
 
     int errno_hold = errno;
     free(filename);
@@ -98,7 +98,7 @@ FILE * puflib_get_nv_store(module_info const * module)
         return NULL;
     }
 
-    FILE *f = open_existing(filename, "r+");
+    FILE *f = puflib_open_existing(filename, "r+");
 
     int errno_hold = errno;
     free(filename);

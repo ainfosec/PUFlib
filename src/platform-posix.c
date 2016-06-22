@@ -20,13 +20,13 @@
 #endif
 
 
-char get_path_sep()
+char puflib_get_path_sep()
 {
     return '/';
 }
 
 
-char const * get_nv_store_path()
+char const * puflib_get_nv_store_path()
 {
     static char nvstore[PATH_MAX + 1] = {0};
 
@@ -51,9 +51,9 @@ char const * get_nv_store_path()
 }
 
 
-int create_directory_tree(char const * path)
+int puflib_create_directory_tree(char const * path)
 {
-    char * path_buf = duplicate_string(path);
+    char * path_buf = puflib_duplicate_string(path);
     if (!path_buf) {
         return -1;
     }
@@ -89,7 +89,7 @@ int create_directory_tree(char const * path)
 }
 
 
-FILE *create_and_open(char const * path, char const * mode)
+FILE * puflib_create_and_open(char const * path, char const * mode)
 {
     int fd = open(path, O_CREAT | O_RDWR | O_EXCL, S_IRUSR | S_IWUSR);
     if (fd < 0) {
@@ -100,7 +100,7 @@ FILE *create_and_open(char const * path, char const * mode)
 }
 
 
-FILE *open_existing(char const * path, char const * mode)
+FILE * puflib_open_existing(char const * path, char const * mode)
 {
     int fd = open(path, O_RDWR, S_IRUSR | S_IWUSR);
     if (fd < 0) {
