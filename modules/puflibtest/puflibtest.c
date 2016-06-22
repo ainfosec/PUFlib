@@ -87,6 +87,7 @@ static enum provisioning_status provision_continue(FILE *f)
         return INCOMPLETE;
 
     case 2:
+        fclose(f);
         puflib_report(this, STATUS_INFO, "complete");
         puflib_report(this, STATUS_INFO, "deleting NV store");
         if (puflib_delete_nv_store(this)) {
@@ -97,6 +98,7 @@ static enum provisioning_status provision_continue(FILE *f)
         }
 
     default:
+        fclose(f);
         puflib_report(this, STATUS_WARN, "NV store corrupted");
         return PROVISION_ERROR;
     }
