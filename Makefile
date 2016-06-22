@@ -16,7 +16,7 @@ SO_MAJ = 1
 SO_MIN = 0.1
 SOFILE = ${SONAME}.${SO_MAJ}.${SO_MIN}
 
-CFLAGS = -O2 -Iinclude -g -Wall -fPIC
+CFLAGS = -Iinclude -g -Wall -fPIC
 LDFLAGS = -shared -Wl,-soname,${SONAME}.${SO_MAJ}
 
 MODULES = puflibtest
@@ -28,7 +28,7 @@ MODULE_SOURCES = $(foreach mod,${MODULE_DIRS},$(wildcard ${MODULE_DIRS}/*.c))
 MODULE_OBJECTS = ${MODULE_SOURCES:.c=.o}
 
 # List all the objects needed here
-OBJECTS = src/puflib.o module_list.o ${MODULE_OBJECTS}
+OBJECTS = src/puflib.o src/misc.o src/platform-posix.o module_list.o ${MODULE_OBJECTS}
 
 .PHONY: all clean
 
