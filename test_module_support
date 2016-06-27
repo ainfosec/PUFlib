@@ -1,0 +1,20 @@
+#!/bin/bash
+##################################################################
+# PUFlib module support check script
+# Description: print a list of all modules that support compilation
+# for this target.
+#
+# Author: Chris Pavlina
+##################################################################
+
+for modname in "$@"; do
+    SCRIPT="./modules/$modname/test_supported"
+    if [[ -x "$SCRIPT" ]]; then
+        "$SCRIPT" 1>&2
+        if [[ $? -eq 0 ]]; then
+            echo "$modname"
+        fi
+    else
+        echo "$modname"
+    fi
+done

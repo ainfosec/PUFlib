@@ -19,11 +19,12 @@ SOFILE = ${SONAME}.${SO_MAJ}.${SO_MIN}
 CFLAGS = -Iinclude -g -Wall -fPIC
 LDFLAGS = -shared -Wl,-soname,${SONAME}.${SO_MAJ}
 
-MODULES = puflibtest
+MODULES := puflibtest
+MODULES_SUPPORTED := $(shell bash ./test_module_support ${MODULES})
 
 # Translate the list of modules to their respective subdirectories,
 # source files, and object files
-MODULE_DIRS = $(patsubst %,modules/%,${MODULES})
+MODULE_DIRS = $(patsubst %,modules/%,${MODULES_SUPPORTED})
 MODULE_SOURCES = $(foreach mod,${MODULE_DIRS},$(wildcard ${MODULE_DIRS}/*.c))
 MODULE_OBJECTS = ${MODULE_SOURCES:.c=.o}
 
@@ -51,7 +52,7 @@ test: test.o ${SOFILE}
 	${CC} ${CFLAGS} -Wl,-rpath,. -L. -lpuf -o test test.o
 
 module_list.c:
-	bash ./gen_module_list ${MODULES} > $@
+	bash ./gen_module_list ${MODULES_SUPPORTED} > $@
 
 clean:
 	rm -f ${SONAME}.${SO_MAJ}.${SO_MIN} ${SONAME}.${SO_MAJ} ${SONAME}
