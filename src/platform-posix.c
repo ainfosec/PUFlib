@@ -15,10 +15,6 @@
 #include <sys/types.h>
 #include <fcntl.h>
 
-#ifndef _POSIX_C_SOURCE
-#   error "platform-posix.c must only be compiled on POSIX-like platforms"
-#endif
-
 
 char const * puflib_get_path_sep()
 {
