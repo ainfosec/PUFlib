@@ -20,9 +20,9 @@
 #endif
 
 
-char puflib_get_path_sep()
+char const * puflib_get_path_sep()
 {
-    return '/';
+    return "/";
 }
 
 

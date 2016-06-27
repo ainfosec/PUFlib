@@ -14,9 +14,9 @@
 #include <stdio.h>
 
 /**
- * Return the path separator character on this platform.
+ * Return the path separator on this platform.
  */
-char puflib_get_path_sep();
+char const * puflib_get_path_sep();
 
 /**
  * Return the preferred path for nonvolatile stores. This will be an absolute
