@@ -11,7 +11,7 @@
 #include <errno.h>
 
 extern module_info const * const PUFLIB_MODULES[];
-static void (*STATUS_CALLBACK)(char const * message) = NULL;
+static void (* volatile STATUS_CALLBACK)(char const * message) = NULL;
 
 #define REPORT_MAX 500
 
@@ -142,8 +142,10 @@ void puflib_report(module_info const * module, enum puflib_status_level level,
     }
 
     snprintf(buf, REPORT_MAX + 1, "%s (%s): %s", level_as_string, module->name, message);
-    if (STATUS_CALLBACK) {
-        STATUS_CALLBACK(buf);
+
+    void (*callback)(char const *) = STATUS_CALLBACK;
+    if (callback) {
+        callback(buf);
     }
 }
 
