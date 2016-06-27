@@ -20,7 +20,7 @@ CFLAGS = -Iinclude -g -Wall -fPIC
 LDFLAGS = -shared -Wl,-soname,${SONAME}.${SO_MAJ}
 
 MODULES := puflibtest
-MODULES_SUPPORTED := $(shell bash ./test_module_support ${MODULES})
+MODULES_SUPPORTED := $(shell bash ./scripts/test_module_support ${MODULES})
 
 # Translate the list of modules to their respective subdirectories,
 # source files, and object files
@@ -52,7 +52,7 @@ test: test.o ${SOFILE}
 	${CC} ${CFLAGS} -Wl,-rpath,. -L. -lpuf -o test test.o
 
 module_list.c:
-	bash ./gen_module_list ${MODULES_SUPPORTED} > $@
+	bash ./scripts/gen_module_list ${MODULES_SUPPORTED} > $@
 
 clean:
 	rm -f ${SONAME}.${SO_MAJ}.${SO_MIN} ${SONAME}.${SO_MAJ} ${SONAME}
