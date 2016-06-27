@@ -1,6 +1,6 @@
 ##############################################################
 # PUFlib Makefile
-# Description: Compiles PUFlic
+# Description: Compiles PUFlib
 #
 # Author: Jacob I. Torrey
 # Author: Chris Pavlina
@@ -37,11 +37,13 @@ all: ${SOFILE}
 
 # Include calculated dependencies
 -include ${OBJECTS:.o=.d}
+-include $(patsubst %,modules/%/Makefile.inc,${MODULES_SUPPORTED})
 
 # Custom rule that calculates dependencies
+THIS_MODULE_NAME = $(patsubst modules/%/,%,$(dir $@))
 %.o: %.c
-	${CC} -c  ${CFLAGS} $*.c -o $*.o
-	${CC} -MM ${CFLAGS} $*.c -o $*.d
+	${CC} -c  ${CFLAGS} ${CFLAGS-${THIS_MODULE_NAME}} $*.c -o $*.o
+	${CC} -MM ${CFLAGS} ${CFLAGS-${THIS_MODULE_NAME}} $*.c -o $*.d
 
 ${SOFILE}: ${OBJECTS}
 	${CC} ${LDFLAGS} $^ -o ${SOFILE}

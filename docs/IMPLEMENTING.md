@@ -11,6 +11,7 @@ First, create the following directory structure (where _modulename_ is the name 
         * Source files. These are any files with the standard `.c` extension; the build system will compile all that it finds.
         * `test_supported`: optional script to check whether the module can be built. If the module cannot be built, this script can exit nonzero, and then the build system will skip over it.
         Any error messages from this script will be printed to the console. Try to only emit messages if there are _errors_; if every script that simply doesn't support the current build target emits a message, the build will be very noisy.
+        * `Makefile.inc`: optional per-module Makefile include; see below.
 
 ## Minimal code skeleton
 
@@ -51,3 +52,17 @@ First, create the following directory structure (where _modulename_ is the name 
     {
         return NULL;
     }
+
+## `Makefile.inc`
+
+It is possible that a module may need to change build or link settings. In this
+case, a `Makefile.inc` can be created in the module subdirectory, to be included
+at build time. Note that includes for modules that fail `test_supported` will
+not be loaded.
+
+Two useful lines in this file are:
+
+    CFLAGS-modulename = ...
+    LDFLAGS += ...
+
+It is not recommended to use `CFLAGS +=` as this modifies flags for the entire build.
