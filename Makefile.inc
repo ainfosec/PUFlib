@@ -11,11 +11,11 @@ SHELL:=/bin/bash
 CFLAGS = ${PUFLIB_CFLAGS} -fvisibility=hidden ${MODCFLAGS}
 LDFLAGS = ${PUFLIB_LDFLAGS} ${MODLDFLAGS}
 
-OBJECTS = $(patsubst %.c,%.o,${SOURCES})
+OBJECTS ?= $(patsubst %.c,%.o,${SOURCES})
 
 .PHONY: all clean
 
-all: ${MODNAME}.mod.o
+all:: ${MODNAME}.mod.o
 
 ${MODNAME}.mod.o: ${OBJECTS}
 	ld -r $^ -o $@
@@ -24,7 +24,7 @@ ${MODNAME}.mod.o: ${OBJECTS}
 	done
 	objcopy $@ --globalize-symbol=${MODNAME}__MODULE_INFO
 
-clean:
+clean::
 	rm -f ${OBJECTS}
 	rm -f ${OBJECTS:.o=.d}
 	rm -f ${MODNAME}.mod.o
