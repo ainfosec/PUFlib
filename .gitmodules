@@ -1,0 +1,3 @@
+[submodule "modules/sxc"]
+	path = modules/sxc
+	url = ssh://git@stash.ainfosec.com:7999/puflib/sxc.git
