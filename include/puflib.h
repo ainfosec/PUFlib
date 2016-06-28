@@ -71,6 +71,9 @@ void puflib_set_status_handler(void (*callback)(char const * message));
  * writing, and for deleting it with puflib_delete_nv_store() when totally
  * done.
  *
+ * The module developer is responsible for consistently using either
+ * nonvolatile files or nonvolatile directories. The two cannot be mixed.
+ *
  * In particular, this could fail with EEXIST if a previous run never
  * concluded. In this case, aborting the previous run with
  * puflib_delete_nv_store() or continuing it with puflig_get_nv_store() should
@@ -105,6 +108,57 @@ FILE * puflib_get_nv_store(module_info const * module);
  * @return zero on success, nonzero on error
  */
 int puflib_delete_nv_store(module_info const * module);
+
+/**
+ * @internal
+ * Create a directory for saving nonvolatile state. This can be used to track
+ * status during provisioning. An error may occur if there is nowhere available
+ * to create a directory (due to read-only file system, insufficient permissions
+ * for the running process, etc); in this case the return value will be NULL and
+ * an error code will be present in errno.
+ *
+ * The module is responsible for freeing the returned path string, and for
+ * deleting the directory with puflib_delete_nv_store_dir() when totally done.
+ *
+ * The module developer is responsible for consistently using either
+ * nonvolatile files or nonvolatile directories. The two cannot be mixed.
+ *
+ * In particular, this could fail with EEXIST if a previous run never
+ * concluded. In this case, aborting the previous run with
+ * puflib_delete_nv_store_dir() or continuing it with puflib_get_nv_store_dir()
+ * should resolve this.
+ *
+ * @param module - the calling module, for tracking ownership
+ * @return path to directory or NULL on error; caller is responsible for
+ *  calling free()
+ */
+char * puflib_create_nv_store_dir(module_info const * module);
+
+/**
+ * @internal
+ * Return the path to an existing nonvolatile store that was created by
+ * puflib_create_nv_store_dir(). An error may occur if the directory does not
+ * exist, or if the running process has insufficient permissions to access it.
+ * In this case the return value will be NULL and an error code will be present
+ * in errno.
+ *
+ * @param module - the calling module, for tracking ownership
+ * @return path to directory or NULL on error; caller is responsible for
+ *  calling free()
+ */
+char * puflib_get_nv_store_dir(module_info const * module);
+
+/**
+ * @internal
+ * Delete a nonvolatile store that was created by puflib_create_nv_store_dir().
+ * An error may occur if the directory does not exist, or if the running
+ * process has insufficient permissions to access it. In this case the return
+ * value will be nonzero and an error code will be present in errno.
+ *
+ * @param module - the calling module, for tracking ownership
+ * @return zero on success, nonzero on error
+ */
+int puflib_delete_nv_store_dir(module_info const * module);
 
 /**
  * @internal

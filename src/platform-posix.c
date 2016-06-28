@@ -4,6 +4,8 @@
 //
 //
 
+#define _XOPEN_SOURCE 700
+
 #include "platform.h"
 #include "misc.h"
 #include <puflib.h>
@@ -14,6 +16,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <fcntl.h>
+#include <ftw.h>
 
 
 char const * puflib_get_path_sep()
@@ -103,5 +106,49 @@ FILE * puflib_open_existing(char const * path, char const * mode)
         return NULL;
     } else {
         return fdopen(fd, mode);
+    }
+}
+
+
+int puflib_mkdir(char const * path)
+{
+    return mkdir(path, 0700);
+}
+
+
+int puflib_check_access(char const * path, int isdirectory)
+{
+    return access(path, isdirectory ? (R_OK | W_OK | X_OK) : (R_OK | W_OK));
+}
+
+
+static int delete_tree_callback(char const * fpath, struct stat const * sb,
+        int typeflag, struct FTW * ftwbuf)
+{
+    (void) sb;
+    (void) typeflag;
+    (void) ftwbuf;
+
+    if (remove(fpath)) {
+        return errno;
+    } else {
+        return 0;
+    }
+}
+
+
+int puflib_delete_tree(char const * path)
+{
+    int rv = nftw(path, &delete_tree_callback, 10, FTW_DEPTH | FTW_PHYS);
+
+    if (rv < 0) {
+        // nftw itself failed, and there is an error in errno
+        return -1;
+    } else if (rv > 0) {
+        // the callback passed an errno error in the return value
+        errno = rv;
+        return -1;
+    } else {
+        return 0;
     }
 }

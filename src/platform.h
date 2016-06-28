@@ -56,4 +56,32 @@ FILE * puflib_create_and_open(char const * path, char const * mode);
  */
 FILE * puflib_open_existing(char const * path, char const * mode);
 
+/**
+ * Create a directory.
+ * @param path - path to directory
+ * @return zero on success, nonzero on failure
+ */
+int puflib_mkdir(char const * path);
+
+/**
+ * Check whether the running process can access a path.
+ *
+ * Warning: using this to gate access creates a possible security hole, as the
+ * time between checking access and actually opening the file can be exploited.
+ * Only use this for basic status reporting and similar.
+ *
+ * @param path - path
+ * @param isdirectory - if true, test as a directory rather than as a file.
+ * @return zero if the running process can access a path.
+ */
+int puflib_check_access(char const * path, int isdirectory);
+
+/**
+ * Delete an entire directory tree.
+ *
+ * @param path - tree to delete
+ * @return zero on success, nonzero on error (with errno set)
+ */
+int puflib_delete_tree(char const * path);
+
 #endif // _PUFLIB_PLATFORM_H

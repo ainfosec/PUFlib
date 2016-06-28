@@ -19,7 +19,7 @@ SOFILE = ${SONAME}.${SO_MAJ}.${SO_MIN}
 CFLAGS = -I${CURDIR}/include -g -Og -Wall -Wextra -fPIC
 LDFLAGS = -shared -Wl,-soname,${SONAME}.${SO_MAJ}
 
-MODULES := puflibtest
+MODULES := puflibtest puflibdirtest
 MODULES_SUPPORTED := $(shell bash ./scripts/test_module_support ${MODULES})
 MODULE_PACKAGES = $(foreach mod,${MODULES_SUPPORTED},modules/${mod}/${mod}.mod.o)
 

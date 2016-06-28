@@ -104,7 +104,7 @@ FILE * puflib_get_nv_store(module_info const * module)
 
 int puflib_delete_nv_store(module_info const * module)
 {
-    char *filename = get_nv_filename(module);
+    char * filename = get_nv_filename(module);
     if (!filename) {
         return -1;
     }
@@ -116,6 +116,59 @@ int puflib_delete_nv_store(module_info const * module)
         return -1;
     } else {
         free(filename);
+        return 0;
+    }
+}
+
+
+char * puflib_create_nv_store_dir(module_info const * module)
+{
+    char * filename = get_nv_filename(module);
+    if (!filename) {
+        return NULL;
+    }
+
+    if (puflib_mkdir(filename)) {
+        int errno_temp = errno;
+        free(filename);
+        errno = errno_temp;
+        return NULL;
+    } else {
+        return filename;
+    }
+}
+
+
+char * puflib_get_nv_store_dir(module_info const * module)
+{
+    char * filename = get_nv_filename(module);
+    if (!filename) {
+        return NULL;
+    }
+
+    if (puflib_check_access(filename, 1)) {
+        free(filename);
+        errno = EACCES;
+        return NULL;
+    } else {
+        return filename;
+    }
+}
+
+
+int puflib_delete_nv_store_dir(module_info const * module)
+{
+    char * filename = get_nv_filename(module);
+    if (!filename) {
+        return -1;
+    }
+
+    if (puflib_delete_tree(filename)) {
+        int errno_temp = errno;
+        free(filename);
+        errno = errno_temp;
+        return -1;
+    } else {
         return 0;
     }
 }
