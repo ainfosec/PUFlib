@@ -7,6 +7,7 @@
 #ifndef _PUFLIB_H_
 #define _PUFLIB_H_
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,7 +25,7 @@ struct module_info_s {
   char * name;
   char * author;
   char * desc;
-  int8_t (*is_hw_supported)();
+  bool (*is_hw_supported)();
   enum provisioning_status (*provision)();
   int8_t * (*chal_resp)();
 };
@@ -102,12 +103,12 @@ FILE * puflib_get_nv_store(module_info const * module);
  * Delete a nonvolatile store that was created by puflib_create_nv_store(). An
  * error may occur if the file does not exist, or if the running process has
  * insufficient permissions to access the file. In this case the return value
- * will be nonzero and an error code will be present in errno.
+ * will be true and an error code will be present in errno.
  *
  * @param module - the calling module, for tracking ownership
- * @return zero on success, nonzero on error
+ * @return false on success, true on error
  */
-int puflib_delete_nv_store(module_info const * module);
+bool puflib_delete_nv_store(module_info const * module);
 
 /**
  * @internal
@@ -153,12 +154,12 @@ char * puflib_get_nv_store_dir(module_info const * module);
  * Delete a nonvolatile store that was created by puflib_create_nv_store_dir().
  * An error may occur if the directory does not exist, or if the running
  * process has insufficient permissions to access it. In this case the return
- * value will be nonzero and an error code will be present in errno.
+ * value will be true and an error code will be present in errno.
  *
  * @param module - the calling module, for tracking ownership
- * @return zero on success, nonzero on error
+ * @return false on success, true on error
  */
-int puflib_delete_nv_store_dir(module_info const * module);
+bool puflib_delete_nv_store_dir(module_info const * module);
 
 /**
  * @internal

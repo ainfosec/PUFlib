@@ -11,6 +11,7 @@
 #ifndef _PUFLIB_PLATFORM_H_
 #define _PUFLIB_PLATFORM_H_
 
+#include <stdbool.h>
 #include <stdio.h>
 
 /**
@@ -32,9 +33,9 @@ char const * puflib_get_nv_store_path();
  * Create a directory and all parent directories that don't already exist. This
  * is equivalent to 'mkdir -p'.
  *
- * @return zero on success, nonzero on error (with errno set)
+ * @return false on success, true on error (with errno set)
  */
-int puflib_create_directory_tree(char const * path);
+bool puflib_create_directory_tree(char const * path);
 
 /**
  * Create and open a new file, but fail if it already exists. This should be
@@ -59,9 +60,9 @@ FILE * puflib_open_existing(char const * path, char const * mode);
 /**
  * Create a directory.
  * @param path - path to directory
- * @return zero on success, nonzero on failure
+ * @return false on success, true on failure
  */
-int puflib_mkdir(char const * path);
+bool puflib_mkdir(char const * path);
 
 /**
  * Check whether the running process can access a path.
@@ -72,16 +73,16 @@ int puflib_mkdir(char const * path);
  *
  * @param path - path
  * @param isdirectory - if true, test as a directory rather than as a file.
- * @return zero if the running process can access a path.
+ * @return false iff the running process can access a path.
  */
-int puflib_check_access(char const * path, int isdirectory);
+bool puflib_check_access(char const * path, bool isdirectory);
 
 /**
  * Delete an entire directory tree.
  *
  * @param path - tree to delete
- * @return zero on success, nonzero on error (with errno set)
+ * @return false on success, true on error (with errno set)
  */
-int puflib_delete_tree(char const * path);
+bool puflib_delete_tree(char const * path);
 
 #endif // _PUFLIB_PLATFORM_H

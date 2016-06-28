@@ -10,7 +10,7 @@
 #include <errno.h>
 #include <unistd.h>
 
-int8_t is_hw_supported();
+bool is_hw_supported();
 enum provisioning_status provision();
 int8_t * chal_resp();
 
@@ -26,9 +26,9 @@ module_info const MODULE_INFO =
 };
 
 
-int8_t is_hw_supported()
+bool is_hw_supported()
 {
-    return 1;
+    return true;
 }
 
 

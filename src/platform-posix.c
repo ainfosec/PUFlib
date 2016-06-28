@@ -50,11 +50,11 @@ char const * puflib_get_nv_store_path()
 }
 
 
-int puflib_create_directory_tree(char const * path)
+bool puflib_create_directory_tree(char const * path)
 {
     char * path_buf = puflib_duplicate_string(path);
     if (!path_buf) {
-        return -1;
+        return true;
     }
 
     // Move through the string one path separator at a time, blanking out that
@@ -73,7 +73,7 @@ int puflib_create_directory_tree(char const * path)
                 int errno_hold = errno;
                 free(path_buf);
                 errno = errno_hold;
-                return -1;
+                return true;
             }
         }
 
@@ -84,7 +84,7 @@ int puflib_create_directory_tree(char const * path)
     }
 
     free(path_buf);
-    return 0;
+    return false;
 }
 
 
@@ -110,15 +110,15 @@ FILE * puflib_open_existing(char const * path, char const * mode)
 }
 
 
-int puflib_mkdir(char const * path)
+bool puflib_mkdir(char const * path)
 {
-    return mkdir(path, 0700);
+    return mkdir(path, 0700) != 0;
 }
 
 
-int puflib_check_access(char const * path, int isdirectory)
+bool puflib_check_access(char const * path, bool isdirectory)
 {
-    return access(path, isdirectory ? (R_OK | W_OK | X_OK) : (R_OK | W_OK));
+    return access(path, isdirectory ? (R_OK | W_OK | X_OK) : (R_OK | W_OK)) != 0;
 }
 
 
@@ -137,18 +137,18 @@ static int delete_tree_callback(char const * fpath, struct stat const * sb,
 }
 
 
-int puflib_delete_tree(char const * path)
+bool puflib_delete_tree(char const * path)
 {
     int rv = nftw(path, &delete_tree_callback, 10, FTW_DEPTH | FTW_PHYS);
 
     if (rv < 0) {
         // nftw itself failed, and there is an error in errno
-        return -1;
+        return true;
     } else if (rv > 0) {
         // the callback passed an errno error in the return value
         errno = rv;
-        return -1;
+        return true;
     } else {
-        return 0;
+        return false;
     }
 }

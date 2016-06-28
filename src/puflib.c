@@ -102,21 +102,21 @@ FILE * puflib_get_nv_store(module_info const * module)
 }
 
 
-int puflib_delete_nv_store(module_info const * module)
+bool puflib_delete_nv_store(module_info const * module)
 {
     char * filename = get_nv_filename(module);
     if (!filename) {
-        return -1;
+        return true;
     }
 
     if (remove(filename)) {
         int errno_temp = errno;
         free(filename);
         errno = errno_temp;
-        return -1;
+        return true;
     } else {
         free(filename);
-        return 0;
+        return false;
     }
 }
 
@@ -156,20 +156,20 @@ char * puflib_get_nv_store_dir(module_info const * module)
 }
 
 
-int puflib_delete_nv_store_dir(module_info const * module)
+bool puflib_delete_nv_store_dir(module_info const * module)
 {
     char * filename = get_nv_filename(module);
     if (!filename) {
-        return -1;
+        return true;
     }
 
     if (puflib_delete_tree(filename)) {
         int errno_temp = errno;
         free(filename);
         errno = errno_temp;
-        return -1;
+        return true;
     } else {
-        return 0;
+        return false;
     }
 }
 
