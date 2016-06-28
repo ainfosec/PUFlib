@@ -16,20 +16,21 @@ SO_MAJ = 1
 SO_MIN = 0.1
 SOFILE = ${SONAME}.${SO_MAJ}.${SO_MIN}
 
-CFLAGS = -Iinclude -g -Wall -Wextra -fPIC
+CFLAGS = -I${CURDIR}/include -g -Og -Wall -Wextra -fPIC
 LDFLAGS = -shared -Wl,-soname,${SONAME}.${SO_MAJ}
 
 MODULES := puflibtest
 MODULES_SUPPORTED := $(shell bash ./scripts/test_module_support ${MODULES})
+MODULE_PACKAGES = $(foreach mod,${MODULES_SUPPORTED},modules/${mod}/${mod}.mod.o)
 
-# Translate the list of modules to their respective subdirectories,
-# source files, and object files
-MODULE_DIRS = $(patsubst %,modules/%,${MODULES_SUPPORTED})
-MODULE_SOURCES = $(foreach mod,${MODULE_DIRS},$(wildcard ${MODULE_DIRS}/*.c))
-MODULE_OBJECTS = ${MODULE_SOURCES:.c=.o}
+define module_mf
+	make -C modules/$(1) $(2) PUFLIB_MF=${CURDIR}/Makefile.inc MODNAME=$(1) \
+			PUFLIB_CFLAGS="${CFLAGS}" PUFLIB_LDFLAGS="${LDFLAGS}"			\
+			CC="${CC}"
+endef
 
 # List all the objects needed here
-OBJECTS = src/puflib.o src/misc.o src/platform-posix.o module_list.o ${MODULE_OBJECTS}
+OBJECTS = src/puflib.o src/misc.o src/platform-posix.o module_list.o
 
 .PHONY: all clean
 
@@ -40,12 +41,19 @@ all: ${SOFILE}
 -include $(patsubst %,modules/%/Makefile.inc,${MODULES_SUPPORTED})
 
 # Custom rule that calculates dependencies
-THIS_MODULE_NAME = $(patsubst modules/%/,%,$(dir $@))
 %.o: %.c
-	${CC} -c  ${CFLAGS} ${CFLAGS-${THIS_MODULE_NAME}} $*.c -o $*.o
-	${CC} -MM ${CFLAGS} ${CFLAGS-${THIS_MODULE_NAME}} $*.c -o $*.d
+	${CC} -c  ${CFLAGS} $*.c -o $*.o
+	${CC} -MM ${CFLAGS} $*.c -o $*.d
 
-${SOFILE}: ${OBJECTS}
+# Module package
+# This links together all the .o files in a module and only exports the module
+# info struct, ensuring no symbol collisions between modules.
+THIS_MODULE_NAME = $(patsubst modules/%/,%,$(dir $@))
+%.mod.o:
+	$(call module_mf,${THIS_MODULE_NAME},all)
+
+${SOFILE}: ${OBJECTS} ${MODULE_PACKAGES}
+	echo ${OBJECTS}
 	${CC} ${LDFLAGS} $^ -o ${SOFILE}
 	ln -fs ${SOFILE} ${SONAME}.${SO_MAJ}
 	ln -fs ${SONAME}.${SO_MAJ} ${SONAME}
@@ -62,3 +70,4 @@ clean:
 	rm -f ${OBJECTS} test.o
 	rm -f ${OBJECTS:.o=.d} test.d
 	rm -f module_list.c
+	$(foreach mod,${MODULES},$(call module_mf,${mod},clean))

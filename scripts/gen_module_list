@@ -14,13 +14,13 @@ echo "#include <puflib.h>"
 echo
 
 for modname in "$@"; do
-    echo "extern module_info const MODULE_INFO__${modname};"
+    echo "extern module_info const ${modname}__MODULE_INFO;"
 done
 echo
 
 echo "module_info const * const PUFLIB_MODULES[] = {"
 for modname in "$@"; do
-    echo "    &MODULE_INFO__${modname},"
+    echo "    &${modname}__MODULE_INFO,"
 done
 echo "    (module_info const *) 0,"
 echo "};"

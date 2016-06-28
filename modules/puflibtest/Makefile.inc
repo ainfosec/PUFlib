@@ -1,1 +1,0 @@
-CFLAGS-puflibtest = -Werror
