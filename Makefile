@@ -70,4 +70,6 @@ clean:
 	rm -f ${OBJECTS} test.o
 	rm -f ${OBJECTS:.o=.d} test.d
 	rm -f module_list.c
-	$(foreach mod,${MODULES},$(call module_mf,${mod},clean))
+	for mod in ${MODULES}; do \
+		$(call module_mf,$${mod},clean); \
+	done
