@@ -42,7 +42,7 @@ First, create the following directory structure (where _modulename_ is the name 
     // information; the bulk of the provisioning code will go here.
     enum provisioning_status provision()
     {
-        return COMPLETED;
+        return PROVISION_COMPLETE;
     }
 
     // Raw challenge/response interface

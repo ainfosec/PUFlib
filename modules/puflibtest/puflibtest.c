@@ -67,7 +67,7 @@ static enum provisioning_status provision_start(FILE *f)
 
     puflib_report(&MODULE_INFO, STATUS_INFO, "provisioning will continue after the next invocation");
     fclose(f);
-    return INCOMPLETE;
+    return PROVISION_INCOMPLETE;
 }
 
 
@@ -85,7 +85,7 @@ static enum provisioning_status provision_continue(FILE *f)
         rewind(f);
         fprintf(f, "%d\n", 2);
         fclose(f);
-        return INCOMPLETE;
+        return PROVISION_INCOMPLETE;
 
     case 2:
         fclose(f);
@@ -95,7 +95,7 @@ static enum provisioning_status provision_continue(FILE *f)
             puflib_report(&MODULE_INFO, STATUS_ERROR, strerror(errno));
             return PROVISION_ERROR;
         } else {
-            return COMPLETED;
+            return PROVISION_COMPLETE;
         }
 
     default:
