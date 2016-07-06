@@ -6,6 +6,8 @@
 #include "misc.h"
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <errno.h>
 
 char * puflib_duplicate_string(char const * src)
 {
@@ -23,4 +25,46 @@ char * puflib_duplicate_string(char const * src)
     strncpy(dest, src, len);
     dest[len] = 0;
     return dest;
+}
+
+
+#define PUFLIB_VASPRINTF_BUFLEN 200
+int puflib_vasprintf(char **strp, const char *fmt, va_list ap)
+{
+    char *buf = malloc(PUFLIB_VASPRINTF_BUFLEN);
+    int size = vsnprintf(buf, PUFLIB_VASPRINTF_BUFLEN, fmt, ap);
+
+    if (size >= PUFLIB_VASPRINTF_BUFLEN) {
+        if (!realloc(&buf, size + 1)) {
+            goto err;
+        }
+        int rtn = vsnprintf(buf, size + 1, fmt, ap);
+        if (rtn >= 0) {
+            *strp = buf;
+            return rtn;
+        } else {
+            goto err;
+        }
+    } else if (size >= 0) {
+        *strp = buf;
+        return size;
+    } else {
+        goto err;
+    }
+
+err:
+    if (buf) {
+        int errno_hold = errno;
+        free(buf);
+        errno = errno_hold;
+    }
+    return -1;
+}
+
+
+int puflib_asprintf(char **strp, const char *fmt, ...)
+{
+    va_list ap;
+    va_start(ap, fmt);
+    return puflib_vasprintf(strp, fmt, ap);
 }

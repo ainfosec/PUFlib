@@ -217,6 +217,22 @@ void puflib_report(module_info const * module, enum puflib_status_level level,
 
 /**
  * @internal
+ * Report a formatted status message. The message should be otherwise
+ * unformatted and raw (do not prepend the message type and module name);
+ * as with puflib_report, formatting like "error (eeprom): hardware caught fire"
+ * will be added later.
+ *
+ * @param module - the calling module
+ * @param level - the status level
+ * @param message - printf format string
+ * @param ... - printf arguments
+ */
+void puflib_report_fmt(module_info const * module, enum puflib_status_level level,
+        char const * fmt, ...)
+    __attribute__((format (printf, 3, 4)));
+
+/**
+ * @internal
  * Print an error message through the report mechanism.
  * This is equivalent to puflib_report(module, STATUS_ERROR, strerror(errno)).
  *

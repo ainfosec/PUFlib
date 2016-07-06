@@ -6,6 +6,7 @@
 
 #include <puflib.h>
 #include "platform.h"
+#include "misc.h"
 
 #include <string.h>
 #include <errno.h>
@@ -13,8 +14,6 @@
 extern module_info const * const PUFLIB_MODULES[];
 static puflib_status_handler_p volatile STATUS_CALLBACK = NULL;
 static puflib_query_handler_p volatile QUERY_CALLBACK = NULL;
-
-#define REPORT_MAX 500
 
 static char * get_nv_filename(module_info const * module);
 
@@ -184,8 +183,6 @@ bool puflib_delete_nv_store_dir(module_info const * module)
 void puflib_report(module_info const * module, enum puflib_status_level level,
         char const * message)
 {
-    char buf[REPORT_MAX + 1];
-
     char const * level_as_string;
     switch (level) {
     case STATUS_INFO:
@@ -200,11 +197,30 @@ void puflib_report(module_info const * module, enum puflib_status_level level,
         break;
     }
 
-    snprintf(buf, REPORT_MAX + 1, "%s (%s): %s", level_as_string, module->name, message);
+    char *formatted = NULL;
+    if (puflib_asprintf(&formatted, "%s (%s): %s", level_as_string, module->name, message) < 0) {
+        if (formatted) free(formatted);
+        STATUS_CALLBACK("error (puflib): internal error formatting message");
+    } else {
+        STATUS_CALLBACK(formatted);
+        free(formatted);
+    }
+}
 
-    void (*callback)(char const *) = STATUS_CALLBACK;
-    if (callback) {
-        callback(buf);
+
+void puflib_report_fmt(module_info const * module, enum puflib_status_level level,
+        char const * fmt, ...)
+{
+    va_list ap;
+    va_start(ap, fmt);
+
+    char *formatted = NULL;
+    if (puflib_vasprintf(&formatted, fmt, ap) < 0) {
+        if (formatted) free(formatted);
+        STATUS_CALLBACK("error (puflib): internal error formatting message");
+    } else {
+        puflib_report(module, level, formatted);
+        free(formatted);
     }
 }
 
