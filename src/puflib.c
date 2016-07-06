@@ -11,7 +11,7 @@
 #include <errno.h>
 
 extern module_info const * const PUFLIB_MODULES[];
-static void (* volatile STATUS_CALLBACK)(char const * message) = NULL;
+static puflib_status_handler_p volatile STATUS_CALLBACK = NULL;
 
 #define REPORT_MAX 500
 
@@ -59,7 +59,7 @@ module_info const * puflib_get_module( char const * name )
 }
 
 
-void puflib_set_status_handler(void (*callback)(char const * message))
+void puflib_set_status_handler(puflib_status_handler_p callback)
 {
     STATUS_CALLBACK = callback;
 }

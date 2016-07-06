@@ -31,6 +31,8 @@ struct module_info_s {
 };
 typedef struct module_info_s module_info;
 
+typedef void (*puflib_status_handler_p)(char const * message);
+
 /**
  * Return a list of all registered modules. Note that this may include modules
  * supporting hardware that is not present, so ->is_hw_supported() must be
@@ -53,7 +55,7 @@ module_info const * puflib_get_module( char const * name );
  *
  * @param - callback, or NULL to ignore messages.
  */
-void puflib_set_status_handler(void (*callback)(char const * message));
+void puflib_set_status_handler(puflib_status_handler_p callback);
 
 /**************************************************************************//**
  * @section
