@@ -201,3 +201,7 @@ void puflib_report(module_info const * module, enum puflib_status_level level,
     }
 }
 
+void puflib_perror(module_info const * module)
+{
+    puflib_report(module, STATUS_ERROR, strerror(errno));
+}

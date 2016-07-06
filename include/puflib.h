@@ -184,4 +184,13 @@ enum puflib_status_level {
 void puflib_report(module_info const * module, enum puflib_status_level level,
         char const * message);
 
+/**
+ * @internal
+ * Print an error message through the report mechanism.
+ * This is equivalent to puflib_report(module, STATUS_ERROR, strerror(errno)).
+ *
+ * @param module - the calling module
+ */
+void puflib_perror(module_info const * module);
+
 #endif // _PUFLIB_H_
