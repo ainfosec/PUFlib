@@ -12,6 +12,7 @@
 
 extern module_info const * const PUFLIB_MODULES[];
 static puflib_status_handler_p volatile STATUS_CALLBACK = NULL;
+static puflib_query_handler_p volatile QUERY_CALLBACK = NULL;
 
 #define REPORT_MAX 500
 
@@ -62,6 +63,12 @@ module_info const * puflib_get_module( char const * name )
 void puflib_set_status_handler(puflib_status_handler_p callback)
 {
     STATUS_CALLBACK = callback;
+}
+
+
+void puflib_set_query_handler(puflib_query_handler_p callback)
+{
+    QUERY_CALLBACK = callback;
 }
 
 
@@ -201,7 +208,20 @@ void puflib_report(module_info const * module, enum puflib_status_level level,
     }
 }
 
+
 void puflib_perror(module_info const * module)
 {
     puflib_report(module, STATUS_ERROR, strerror(errno));
+}
+
+
+bool puflib_query(module_info const * module, char const * key, char const * prompt,
+        char * buffer, size_t buflen)
+{
+    if (QUERY_CALLBACK) {
+        return QUERY_CALLBACK(module, key, prompt, buffer, buflen);
+    } else {
+        errno = 0;
+        return true;
+    }
 }

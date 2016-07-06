@@ -32,6 +32,12 @@ struct module_info_s {
 typedef struct module_info_s module_info;
 
 typedef void (*puflib_status_handler_p)(char const * message);
+typedef bool (*puflib_query_handler_p)(
+        module_info const * module,
+        char const * key,
+        char const * prompt,
+        char * buffer,
+        size_t buflen);
 
 /**
  * Return a list of all registered modules. Note that this may include modules
@@ -56,6 +62,29 @@ module_info const * puflib_get_module( char const * name );
  * @param - callback, or NULL to ignore messages.
  */
 void puflib_set_status_handler(puflib_status_handler_p callback);
+
+/**
+ * Set a callback function to receive queries. This defaults to NULL. If any
+ * module tries to query before this has been set, it will have the option of
+ * using a default value; modules are not required to allow this, however, so
+ * configuring it prior to provisioning is recommended.
+ *
+ * Callback function parameters:
+ *  - module - the calling module
+ *  - key - a unique key identifying the data being requested
+ *  - prompt - a human-readable prompt
+ *  - buffer - a buffer to receive the data
+ *  - bufsz - the length of the buffer
+ *  - (return) - false on success, true on error (including user cancel)
+ *
+ * The unique key is provided to allow data to be provided by non-interactive
+ * means, by using a callback that looks up data by key and returns it
+ * directly.
+ *
+ * @param - callback, or NULL to clear (but see warning above)
+ */
+void puflib_set_query_handler(puflib_query_handler_p callback);
+
 
 /**************************************************************************//**
  * @section
@@ -194,5 +223,31 @@ void puflib_report(module_info const * module, enum puflib_status_level level,
  * @param module - the calling module
  */
 void puflib_perror(module_info const * module);
+
+/**
+ * @internal
+ * Query for data. This should only be run during provisioning, and can be used
+ * to gather any required information from the user.
+ *
+ * The module must provide a unique key for every data item being requested.
+ * This allows callers to provide data non-interactively by looking it up
+ * based on this key.
+ *
+ * Note that this function can "fail" because the user cancelled the request.
+ * In this case, it will return true to indicate error, but errno will be set
+ * to zero.
+ *
+ * Also note that implementations may provide totally unvalidated data,
+ * including data that is not NUL-terminated.
+ *
+ * @param module - the calling module
+ * @param key - a unique key identifying the data being requested
+ * @param prompt - a human-readable prompt
+ * @param buffer - a buffer to receive the data
+ * @param bufsz - the length of the buffer
+ * @return zero on success, nonzero on error (including user cancel)
+ */
+bool puflib_query(module_info const * module, char const * key, char const * prompt,
+        char * buffer, size_t buflen);
 
 #endif // _PUFLIB_H_

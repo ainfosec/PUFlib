@@ -67,6 +67,13 @@ static enum provisioning_status provision_start(FILE *f)
 
     puflib_report(&MODULE_INFO, STATUS_INFO, "provisioning will continue after the next invocation");
     fclose(f);
+
+    char querybuf[500] = "query input was: ";
+    puflib_query(&MODULE_INFO, "testquery", "Enter any data: ",
+            querybuf + strlen(querybuf), sizeof(querybuf) - strlen(querybuf));
+    querybuf[sizeof(querybuf) - 1] = 0;
+    puflib_report(&MODULE_INFO, STATUS_INFO, querybuf);
+
     return PROVISION_INCOMPLETE;
 }
 

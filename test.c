@@ -10,6 +10,7 @@
 #include <puflib.h>
 #include <stdio.h>
 #include <string.h>
+#include <readline/readline.h>
 
 
 static void status_handler(char const * message)
@@ -18,9 +19,28 @@ static void status_handler(char const * message)
 }
 
 
+static bool query_handler(module_info const * module, char const * key,
+        char const * prompt, char * buffer, size_t buflen)
+{
+    char * input;
+
+    printf("Query from module \"%s\", key \"%s\"\n", module->name, key);
+    input = readline(prompt);
+    if (!input) {
+        return true;
+    } else {
+        strncpy(buffer, input, buflen);
+        buffer[buflen - 1] = 0;
+        free(input);
+        return false;
+    }
+}
+
+
 int main(int argc, char **argv)
 {
     puflib_set_status_handler(&status_handler);
+    puflib_set_query_handler(&query_handler);
 
     if (argc == 1)
     {

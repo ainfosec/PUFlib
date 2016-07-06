@@ -59,7 +59,7 @@ ${SOFILE}: ${OBJECTS} ${MODULE_PACKAGES}
 	ln -fs ${SONAME}.${SO_MAJ} ${SONAME}
 
 test: test.o ${SOFILE}
-	${CC} ${CFLAGS} -Wl,-rpath,. -L. -lpuf -o test test.o
+	${CC} ${CFLAGS} -Wl,-rpath,. -L. -lpuf -lreadline -o test test.o
 
 module_list.c:
 	bash ./scripts/gen_module_list ${MODULES_SUPPORTED} > $@
