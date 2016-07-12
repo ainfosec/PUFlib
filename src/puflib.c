@@ -134,7 +134,7 @@ char * puflib_create_nv_store_dir(module_info const * module)
         return NULL;
     }
 
-    if (puflib_mkdir(filename)) {
+    if (puflib_create_directory_tree(filename)) {
         int errno_temp = errno;
         free(filename);
         errno = errno_temp;
