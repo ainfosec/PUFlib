@@ -2,7 +2,11 @@
 //
 // (C) Copyright 2016 Assured Information Security, Inc.
 //
-//
+
+/**
+ * @file
+ * Main PUFlib header file.
+ */
 
 #ifndef _PUFLIB_H_
 #define _PUFLIB_H_
@@ -87,12 +91,12 @@ void puflib_set_query_handler(puflib_query_handler_p callback);
 
 
 /**************************************************************************//**
- * @section
+ * @name Internal
  * Internal documentation; used for implementing modules.
  *****************************************************************************/
+/// @{
 
 /**
- * @internal
  * Create a file for saving nonvolatile state. This can be used to track status
  * during provisioning. An error may occur if there is nowhere available to
  * create a file (due to read-only file system, insufficient permissions for
@@ -117,9 +121,8 @@ void puflib_set_query_handler(puflib_query_handler_p callback);
 FILE * puflib_create_nv_store(module_info const * module);
 
 /**
- * @internal
- * Open an existing nonvolatile store that was created by
- * puflib_create_nv_store(). An error may occur if the file does not exist, or
+ * Open an existing nonvolatile store that was created by puflib_create_nv_store().
+ * An error may occur if the file does not exist, or
  * if the running process has insufficient permissions to access the file. In
  * this case the return value will be NULL and an error code will be present in
  * errno.
@@ -130,7 +133,6 @@ FILE * puflib_create_nv_store(module_info const * module);
 FILE * puflib_get_nv_store(module_info const * module);
 
 /**
- * @internal
  * Delete a nonvolatile store that was created by puflib_create_nv_store(). An
  * error may occur if the file does not exist, or if the running process has
  * insufficient permissions to access the file. In this case the return value
@@ -142,7 +144,6 @@ FILE * puflib_get_nv_store(module_info const * module);
 bool puflib_delete_nv_store(module_info const * module);
 
 /**
- * @internal
  * Create a directory for saving nonvolatile state. This can be used to track
  * status during provisioning. An error may occur if there is nowhere available
  * to create a directory (due to read-only file system, insufficient permissions
@@ -167,7 +168,6 @@ bool puflib_delete_nv_store(module_info const * module);
 char * puflib_create_nv_store_dir(module_info const * module);
 
 /**
- * @internal
  * Return the path to an existing nonvolatile store that was created by
  * puflib_create_nv_store_dir(). An error may occur if the directory does not
  * exist, or if the running process has insufficient permissions to access it.
@@ -181,7 +181,6 @@ char * puflib_create_nv_store_dir(module_info const * module);
 char * puflib_get_nv_store_dir(module_info const * module);
 
 /**
- * @internal
  * Delete a nonvolatile store that was created by puflib_create_nv_store_dir().
  * An error may occur if the directory does not exist, or if the running
  * process has insufficient permissions to access it. In this case the return
@@ -193,7 +192,6 @@ char * puflib_get_nv_store_dir(module_info const * module);
 bool puflib_delete_nv_store_dir(module_info const * module);
 
 /**
- * @internal
  * Severity levels for status messages.
  */
 enum puflib_status_level {
@@ -203,7 +201,6 @@ enum puflib_status_level {
 };
 
 /**
- * @internal
  * Report a status message. The message should be unformatted and raw, like
  * "hardware caught fire"; formatting like "error (eeprom): hardware caught fire"
  * will be added later.
@@ -216,7 +213,6 @@ void puflib_report(module_info const * module, enum puflib_status_level level,
         char const * message);
 
 /**
- * @internal
  * Report a formatted status message. The message should be otherwise
  * unformatted and raw (do not prepend the message type and module name);
  * as with puflib_report, formatting like "error (eeprom): hardware caught fire"
@@ -232,7 +228,6 @@ void puflib_report_fmt(module_info const * module, enum puflib_status_level leve
     __attribute__((format (printf, 3, 4)));
 
 /**
- * @internal
  * Print an error message through the report mechanism.
  * This is equivalent to puflib_report(module, STATUS_ERROR, strerror(errno)).
  *
@@ -241,7 +236,6 @@ void puflib_report_fmt(module_info const * module, enum puflib_status_level leve
 void puflib_perror(module_info const * module);
 
 /**
- * @internal
  * Query for data. This should only be run during provisioning, and can be used
  * to gather any required information from the user.
  *
@@ -265,5 +259,7 @@ void puflib_perror(module_info const * module);
  */
 bool puflib_query(module_info const * module, char const * key, char const * prompt,
         char * buffer, size_t buflen);
+
+/** @} */
 
 #endif // _PUFLIB_H_
