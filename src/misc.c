@@ -68,3 +68,39 @@ int puflib_asprintf(char **strp, const char *fmt, ...)
     va_start(ap, fmt);
     return puflib_vasprintf(strp, fmt, ap);
 }
+
+
+char * puflib_concat(char const * first, ...)
+{
+    va_list ap;
+    size_t len;
+    char const * each;
+    char * head, * tail;
+
+    if (!first) return puflib_concat("", NULL);
+
+    len = 0;
+    va_start(ap, first);
+    each = first;
+    do {
+        len += strlen(each);
+    } while ((each = va_arg(ap, char const *)));
+    va_end(ap);
+
+    head = malloc(len + 1);
+    if (!head) {
+        return NULL;
+    }
+    tail = head;
+
+    va_start(ap, first);
+    each = first;
+    do {
+        size_t each_len = strlen(each);
+        strncpy(tail, each, each_len);
+        len -= each_len;
+        tail += each_len;
+    } while ((each = va_arg(ap, char const *)));
+
+    return head;
+}

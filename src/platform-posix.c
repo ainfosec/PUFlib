@@ -25,32 +25,44 @@ char const * puflib_get_path_sep()
 }
 
 
-char const * puflib_get_nv_store_path()
+char * puflib_get_nv_store_path(char const * module_name, enum puflib_storage_type type)
 {
-    static char nvstore[PATH_MAX + 1] = {0};
-
     if (getuid() == 0) {
-        return "/var/lib/puflib/nvstores";
-    } else if (nvstore[0] != 0) {
-        return &nvstore[0];
+        char const * basepath = "/var/lib/puflib/";
+        switch (type) {
+        case STORAGE_TEMP_FILE:
+        case STORAGE_TEMP_DIR:
+            return puflib_concat(basepath, "temp/", module_name, NULL);
+        
+        case STORAGE_FINAL_FILE:
+        case STORAGE_FINAL_DIR:
+            return puflib_concat(basepath, "final/", module_name, NULL);
+        default:
+            return NULL;
+        }
     } else {
-        char const *home = getenv("HOME");
+        char const * home = getenv("HOME");
+        char const * subdir = "/.local/lib/puflib/";
         if (!home) {
             errno = ENOENT;
             return NULL;
         }
+        switch(type) {
+        case STORAGE_TEMP_FILE:
+        case STORAGE_TEMP_DIR:
+            return puflib_concat(home, subdir, "temp/", module_name, NULL);
 
-        size_t homelen = strlen(home);
-
-        strncpy(nvstore, home, PATH_MAX);
-        strncpy(nvstore + homelen, "/.local/lib/puflib/nvstores", PATH_MAX - homelen);
-        nvstore[sizeof(nvstore) - 1] = 0;
-        return &nvstore[0];
+        case STORAGE_FINAL_FILE:
+        case STORAGE_FINAL_DIR:
+            return puflib_concat(home, subdir, "final/", module_name, NULL);
+        default:
+            return NULL;
+        }
     }
 }
 
 
-bool puflib_create_directory_tree(char const * path)
+bool puflib_create_directory_tree(char const * path, bool skip_last)
 {
     char * path_buf = puflib_duplicate_string(path);
     if (!path_buf) {
@@ -68,12 +80,14 @@ bool puflib_create_directory_tree(char const * path)
             *path_sep = 0;
         }
 
-        if (*path_buf && mkdir(path_buf, 0777)) {
-            if (errno != EEXIST) {
-                int errno_hold = errno;
-                free(path_buf);
-                errno = errno_hold;
-                return true;
+        if (!(skip_last && !path_sep)) {
+            if (*path_buf && mkdir(path_buf, 0777)) {
+                if (errno != EEXIST) {
+                    int errno_hold = errno;
+                    free(path_buf);
+                    errno = errno_hold;
+                    return true;
+                }
             }
         }
 

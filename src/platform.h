@@ -13,6 +13,7 @@
 
 #include <stdbool.h>
 #include <stdio.h>
+#include <puflib_module.h>
 
 /**
  * Return the path separator on this platform.
@@ -20,22 +21,25 @@
 char const * puflib_get_path_sep();
 
 /**
- * Return the preferred path for nonvolatile stores. This will be an absolute
- * path into a place where the calling process should have read and write
- * permission, but this function neither verifies this nor creates the
- * directory.
+ * Return a path for a nonvolatile store, given the store type and module
+ * name. This is allocated on the heap; the caller is responsible for freeing
+ * it. The path will be into a place where the calling process should have
+ * read and write permission, but this function neither verifies this nor
+ * creates the directory.
  *
  * @return path to directory on success, NULL on error (with errno set)
  */
-char const * puflib_get_nv_store_path();
+char * puflib_get_nv_store_path();
 
 /**
  * Create a directory and all parent directories that don't already exist. This
  * is equivalent to 'mkdir -p'.
  *
+ * @param skip_last - if true, skip creating the final path component. This is
+ *  used to pass in a full file path and avoid creating the file as a directory.
  * @return false on success, true on error (with errno set)
  */
-bool puflib_create_directory_tree(char const * path);
+bool puflib_create_directory_tree(char const * path, bool skip_last);
 
 /**
  * Create and open a new file, but fail if it already exists. This should be

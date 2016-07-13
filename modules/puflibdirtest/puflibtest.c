@@ -4,7 +4,7 @@
 //
 //
 
-#include <puflib.h>
+#include <puflib_module.h>
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
@@ -45,7 +45,7 @@ enum provisioning_status provision()
     char *path;
     FILE *f;
 
-    path = puflib_create_nv_store_dir(&MODULE_INFO);
+    path = puflib_create_nv_store(&MODULE_INFO, STORAGE_TEMP_DIR);
     if (path) {
         puflib_report(&MODULE_INFO, STATUS_INFO, "creating NV store");
         chdir(path);
@@ -54,7 +54,7 @@ enum provisioning_status provision()
         return provision_start(f);
     } else {
         puflib_report(&MODULE_INFO, STATUS_INFO, "could not create or NV store exists, continuing provision");
-        path = puflib_get_nv_store_dir(&MODULE_INFO);
+        path = puflib_get_nv_store(&MODULE_INFO, STORAGE_TEMP_DIR);
         if (!path) {
             puflib_report(&MODULE_INFO, STATUS_ERROR, strerror(errno));
             return PROVISION_ERROR;
@@ -99,7 +99,7 @@ static enum provisioning_status provision_continue(FILE *f)
         fclose(f);
         puflib_report(&MODULE_INFO, STATUS_INFO, "complete");
         puflib_report(&MODULE_INFO, STATUS_INFO, "deleting NV store");
-        if (puflib_delete_nv_store_dir(&MODULE_INFO)) {
+        if (puflib_delete_nv_store(&MODULE_INFO, STORAGE_TEMP_DIR)) {
             puflib_report(&MODULE_INFO, STATUS_ERROR, strerror(errno));
             return PROVISION_ERROR;
         } else {

@@ -15,32 +15,10 @@ extern module_info const * const PUFLIB_MODULES[];
 static puflib_status_handler_p volatile STATUS_CALLBACK = NULL;
 static puflib_query_handler_p volatile QUERY_CALLBACK = NULL;
 
-static char * get_nv_filename(module_info const * module);
-
-
-/**
- * @internal
- * Return the filename for a module's nonvolatile store. This is allocated on
- * the heap and must be freed by the caller.
- *
- * Returns NULL on OOM with errno == ENOMEM.
- */
-static char * get_nv_filename(module_info const * module)
+static bool storage_type_is_dir(enum puflib_storage_type type)
 {
-    char const *nvstore = puflib_get_nv_store_path();
-    size_t buflen = strlen(nvstore) + strlen(module->name) + 2;
-    char * buf = malloc(buflen);
-
-    if (!buf) {
-        return NULL;
-    }
-
-    strncpy(buf, nvstore, buflen);
-    strncat(buf, puflib_get_path_sep(), buflen);
-    strncat(buf, module->name, buflen);
-    return buf;
+    return type == STORAGE_TEMP_DIR || type == STORAGE_FINAL_DIR;
 }
-
 
 module_info const * const * puflib_get_modules()
 {
@@ -71,110 +49,80 @@ void puflib_set_query_handler(puflib_query_handler_p callback)
 }
 
 
-FILE * puflib_create_nv_store(module_info const * module)
+char * puflib_create_nv_store(module_info const * module, enum puflib_storage_type type)
 {
-    char * filename = get_nv_filename(module);
-    if (!filename) {
+    char * path = puflib_get_nv_store_path(module->name, type);
+    if (!path) {
         return NULL;
     }
 
-    if (puflib_create_directory_tree(puflib_get_nv_store_path())) {
-        free(filename);
-        return NULL;
+    if (storage_type_is_dir(type)) {
+        if (!puflib_check_access(path, true)) {
+            free(path);
+            errno = EEXIST;
+            return NULL;
+        }
     }
 
-    FILE *f = puflib_create_and_open(filename, "r+");
+    if (puflib_create_directory_tree(path, !storage_type_is_dir(type))) {
+        goto err;
+    }
 
-    int errno_hold = errno;
-    free(filename);
-    errno = errno_hold;
-    return f;
+    if (!storage_type_is_dir(type)) {
+        FILE *f = puflib_create_and_open(path, "r+");
+        if (!f) goto err;
+        fclose(f);
+    }
+
+    return path;
+
+err:
+    if (path) {
+        free(path);
+    }
+    return NULL;
 }
 
 
-FILE * puflib_get_nv_store(module_info const * module)
+char * puflib_get_nv_store(module_info const * module, enum puflib_storage_type type)
 {
-    char * filename = get_nv_filename(module);
-    if (!filename) {
+    char * path = puflib_get_nv_store_path(module->name, type);
+    if (!path) {
         return NULL;
     }
 
-    FILE *f = puflib_open_existing(filename, "r+");
-
-    int errno_hold = errno;
-    free(filename);
-    errno = errno_hold;
-    return f;
-}
-
-
-bool puflib_delete_nv_store(module_info const * module)
-{
-    char * filename = get_nv_filename(module);
-    if (!filename) {
-        return true;
-    }
-
-    if (remove(filename)) {
-        int errno_temp = errno;
-        free(filename);
-        errno = errno_temp;
-        return true;
-    } else {
-        free(filename);
-        return false;
-    }
-}
-
-
-char * puflib_create_nv_store_dir(module_info const * module)
-{
-    char * filename = get_nv_filename(module);
-    if (!filename) {
-        return NULL;
-    }
-
-    if (puflib_create_directory_tree(filename)) {
-        int errno_temp = errno;
-        free(filename);
-        errno = errno_temp;
-        return NULL;
-    } else {
-        return filename;
-    }
-}
-
-
-char * puflib_get_nv_store_dir(module_info const * module)
-{
-    char * filename = get_nv_filename(module);
-    if (!filename) {
-        return NULL;
-    }
-
-    if (puflib_check_access(filename, 1)) {
-        free(filename);
+    if (puflib_check_access(path, storage_type_is_dir(type))) {
+        free(path);
         errno = EACCES;
         return NULL;
     } else {
-        return filename;
+        return path;
     }
 }
 
 
-bool puflib_delete_nv_store_dir(module_info const * module)
+bool puflib_delete_nv_store(module_info const * module, enum puflib_storage_type type)
 {
-    char * filename = get_nv_filename(module);
-    if (!filename) {
+    char * path = puflib_get_nv_store_path(module->name, type);
+    if (!path) {
         return true;
     }
 
-    if (puflib_delete_tree(filename)) {
+    bool err;
+
+    if (storage_type_is_dir(type)) {
+        err = puflib_delete_tree(path);
+    } else {
+        err = remove(path);
+    }
+
+    if (err) {
         int errno_temp = errno;
-        free(filename);
+        free(path);
         errno = errno_temp;
         return true;
     } else {
+        free(path);
         return false;
     }
 }
