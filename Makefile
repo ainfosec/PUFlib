@@ -56,7 +56,6 @@ THIS_MODULE_NAME = $(patsubst modules/%/,%,$(dir $@))
 	$(call module_mf,${THIS_MODULE_NAME},all)
 
 ${SOFILE}: ${OBJECTS} ${MODULE_PACKAGES}
-	echo ${OBJECTS}
 	${CC} ${LDFLAGS} $^ -o ${SOFILE}
 	ln -fs ${SOFILE} ${SONAME}.${SO_MAJ}
 	ln -fs ${SONAME}.${SO_MAJ} ${SONAME}
