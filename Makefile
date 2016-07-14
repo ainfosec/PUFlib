@@ -30,7 +30,7 @@ define module_mf
 endef
 
 # List all the objects needed here
-OBJECTS = src/puflib.o src/misc.o src/platform-posix.o module_list.o
+OBJECTS = puflib/puflib.o puflib/misc.o puflib/platform-posix.o module_list.o
 
 .PHONY: all clean
 
