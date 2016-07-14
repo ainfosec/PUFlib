@@ -29,6 +29,7 @@ test
 *.i*86
 *.x86_64
 *.hex
+pufctl/pufctl
 
 # Debug files
 *.dSYM/

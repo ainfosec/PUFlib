@@ -1,0 +1,3 @@
+# Quick script for use during development - runs pufctl
+
+LD_LIBRARY_PATH=. ./pufctl/pufctl "$@"
