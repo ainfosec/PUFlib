@@ -103,5 +103,7 @@ char * puflib_concat(char const * first, ...)
     } while ((each = va_arg(ap, char const *)));
     va_end(ap);
 
+    *tail = 0;
+
     return head;
 }
