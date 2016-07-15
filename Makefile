@@ -21,6 +21,7 @@ LDFLAGS = -shared -Wl,-soname,${SONAME}.${SO_MAJ}
 
 MODULES := puflibtest puflibdirtest
 MODULES_SUPPORTED := $(shell bash ./scripts/test_module_support ${MODULES})
+MODULE_DIRS = $(foreach mod,${MODULES_SUPPORTED},modules/${mod})
 MODULE_PACKAGES = $(foreach mod,${MODULES_SUPPORTED},modules/${mod}/${mod}.mod.o)
 
 define module_mf
@@ -32,7 +33,7 @@ endef
 # List all the objects needed here
 OBJECTS = puflib/puflib.o puflib/misc.o puflib/platform-posix.o module_list.o
 
-.PHONY: all clean pufctl
+.PHONY: all clean pufctl ${MODULE_DIRS}
 
 all: ${SOFILE} pufctl
 
@@ -51,12 +52,12 @@ pufctl:
 # Module package
 # This links together all the .o files in a module and only exports the module
 # info struct, ensuring no symbol collisions between modules.
-THIS_MODULE_NAME = $(patsubst modules/%/,%,$(dir $@))
-%.mod.o:
+THIS_MODULE_NAME = $(patsubst modules/%,%,$@)
+${MODULE_DIRS}:
 	$(call module_mf,${THIS_MODULE_NAME},all)
 
-${SOFILE}: ${OBJECTS} ${MODULE_PACKAGES}
-	${CC} ${LDFLAGS} $^ -o ${SOFILE}
+${SOFILE}: ${OBJECTS} ${MODULE_DIRS}
+	${CC} ${LDFLAGS} ${OBJECTS} ${MODULE_PACKAGES} -o ${SOFILE}
 	ln -fs ${SOFILE} ${SONAME}.${SO_MAJ}
 	ln -fs ${SONAME}.${SO_MAJ} ${SONAME}
 
