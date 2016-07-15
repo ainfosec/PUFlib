@@ -9,7 +9,7 @@ SHELL:=/bin/bash
 CC = $(shell command -v colorgcc 2>&1 || echo gcc)
 
 CFLAGS = -I${CURDIR}/../include -g -Og -Wall -Wextra -std=c99
-LDFLAGS = -L.. -lpuf
+LDFLAGS = -L.. -lpuf -lreadline
 
 OBJECTS = pufctl.o
 

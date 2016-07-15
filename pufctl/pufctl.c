@@ -2,11 +2,12 @@
 //
 // Copyright (C) 2016 Assured Information Security, Inc.
 
-//#include <puflib.h>
+#include <puflib.h>
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
 #include <assert.h>
+#include <readline/readline.h>
 
 struct opts {
     bool help;
@@ -84,6 +85,99 @@ static bool parse_args(struct opts * opts, int argc, char ** argv)
 }
 
 
+static void usage(void)
+{
+    printf("pufctl [OPTIONS] COMMAND [...]\n");
+    printf("manage and provision PUFlib PUFs.\n");
+    printf("\n");
+    printf("commands:\n");
+    printf("  list                  List all PUF modules\n");
+    printf("  provisioned           List all provisioned PUF modules\n");
+    printf("  provision MOD         Provision MOD. May be interactive.\n");
+    printf("  continue MOD          Continue provisioning MOD.\n");
+    printf("  deprovision MOD...    Deprovision modules.\n");
+    printf("  disable MOD...        Temporarily disable modules.\n");
+    printf("  enable MOD...         Re-enable modules.\n");
+}
+
+
+/**
+ * Command to emit a list of modules.
+ * @param include_all - list all compiled modules. If false, only list
+ *  provisioned modules.
+ * @return exit code
+ */
+static int do_list(bool include_all)
+{
+    char const * fmt = "%-20s %-15s %-15s %-15s\n";
+    printf(fmt, "MODULE", "HWSUPPORT", "PROVISIONED", "ENABLED");
+
+    module_info const * const * modules = puflib_get_modules();
+
+    for (size_t i = 0; modules[i]; ++i) {
+        bool hwsupp = modules[i]->is_hw_supported();
+        bool provisioned = false;
+        bool enabled = false;
+
+        if (include_all || (provisioned && enabled)) {
+            printf(fmt, modules[i]->name,
+                    hwsupp ? "supported" : "not-supp",
+                    provisioned ? "provisioned" : "not-prov",
+                    enabled ? "enabled" : "disabled");
+        }
+    }
+
+    return 0;
+}
+
+
+static void status_handler(char const * message)
+{
+    printf("%s\n", message);
+}
+
+
+static bool query_handler(module_info const * module, char const * key,
+        char const * prompt, char * buffer, size_t buflen)
+{
+    char * input;
+
+    printf("Query from module \"%s\", key \"%s\"\n", module->name, key);
+    input = readline(prompt);
+    if (!input) {
+        return true;
+    } else {
+        strncpy(buffer, input, buflen);
+        buffer[buflen - 1] = 0;
+        free(input);
+        return false;
+    }
+}
+
+
+static int do_provision(char const * modname, bool noninteractive)
+{
+    puflib_set_status_handler(&status_handler);
+    puflib_set_query_handler(&query_handler);
+
+    module_info const * module = puflib_get_module(modname);
+
+    if (module) {
+        if (module->is_hw_supported()) {
+            module->provision();
+            return 0;
+        } else {
+            fprintf(stderr, "pufctl: module \"%s\" does not support this hardware\n",
+                    modname);
+            return 1;
+        }
+    } else {
+        fprintf(stderr, "pufctl: module \"%s\" not found\n", modname);
+        return 1;
+    }
+}
+
+
 int main(int argc, char ** argv)
 {
     struct opts opts = {0};
@@ -93,17 +187,27 @@ int main(int argc, char ** argv)
     }
 
     if (opts.help) {
-        puts("help");
+        usage();
+        return 0;
     }
 
     if (opts.noninteractive) {
         puts("noninteractive");
     }
 
-    puts("Extra arguments:");
-    for (int i = 0; i < opts.argc; ++i) {
-        puts(opts.argv[i]);
+    if (opts.argc == 0 || !strcmp(opts.argv[0], "list")) {
+        return do_list(true);
+    } else if (!strcmp(opts.argv[0], "provisioned")) {
+        return do_list(false);
+    } else if (!strcmp(opts.argv[0], "provision")) {
+        if (opts.argc != 2) {
+            fprintf(stderr, "pufctl: expected one argument to command \"provision\". Try --help\n");
+            return 1;
+        } else {
+            return do_provision(opts.argv[1], opts.noninteractive);
+        }
+    } else {
+        fprintf(stderr, "pufctl: unrecognized command '%s'\n", opts.argv[0]);
+        return 1;
     }
-
-    return 0;
 }
