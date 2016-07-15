@@ -116,8 +116,9 @@ static int do_list(bool include_all)
 
     for (size_t i = 0; modules[i]; ++i) {
         bool hwsupp = modules[i]->is_hw_supported();
-        bool provisioned = false;
-        bool enabled = false;
+        enum module_status status = puflib_module_status(modules[i]);
+        bool provisioned = (status & MODULE_PROVISIONED);
+        bool enabled = !(status & MODULE_DISABLED);
 
         if (include_all || (provisioned && enabled)) {
             printf(fmt, modules[i]->name,

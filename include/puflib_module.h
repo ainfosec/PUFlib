@@ -25,6 +25,9 @@ enum puflib_storage_type
     STORAGE_TEMP_DIR,   ///< temporary directory, to be deleted after provisioning
     STORAGE_FINAL_FILE, ///< final file, to hold the result of provisioning
     STORAGE_FINAL_DIR,  ///< final directory, to hold the result of provisioning
+
+    STORAGE_DISABLED_FILE,  ///< disabled final file - for internal use
+    STORAGE_DISABLED_DIR,   ///< disabled final directory - for internal use
 };
 
 /**

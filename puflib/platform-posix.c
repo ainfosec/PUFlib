@@ -33,10 +33,15 @@ char * puflib_get_nv_store_path(char const * module_name, enum puflib_storage_ty
         case STORAGE_TEMP_FILE:
         case STORAGE_TEMP_DIR:
             return puflib_concat(basepath, "temp/", module_name, NULL);
-        
+
         case STORAGE_FINAL_FILE:
         case STORAGE_FINAL_DIR:
             return puflib_concat(basepath, "final/", module_name, NULL);
+
+        case STORAGE_DISABLED_FILE:
+        case STORAGE_DISABLED_DIR:
+            return puflib_concat(basepath, "disabled/", module_name, NULL);
+
         default:
             return NULL;
         }
@@ -55,6 +60,11 @@ char * puflib_get_nv_store_path(char const * module_name, enum puflib_storage_ty
         case STORAGE_FINAL_FILE:
         case STORAGE_FINAL_DIR:
             return puflib_concat(home, subdir, "final/", module_name, NULL);
+
+        case STORAGE_DISABLED_FILE:
+        case STORAGE_DISABLED_DIR:
+            return puflib_concat(home, subdir, "disabled/", module_name, NULL);
+
         default:
             return NULL;
         }

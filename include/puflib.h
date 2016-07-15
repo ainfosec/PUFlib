@@ -16,10 +16,19 @@
 #define PUFLIB_MODULE_NAME_MAX 100
 
 enum provisioning_status {
-  PROVISION_NOT_SUPPORTED,
-  PROVISION_INCOMPLETE,
-  PROVISION_COMPLETE,
-  PROVISION_ERROR,
+    PROVISION_NOT_SUPPORTED,
+    PROVISION_INCOMPLETE,
+    PROVISION_COMPLETE,
+    PROVISION_ERROR,
+};
+
+/**
+ * Module status flags - bitwise OR'd
+ */
+enum module_status {
+    MODULE_DISABLED = 0x01,
+    MODULE_PROVISIONED = 0x02,
+    MODULE_STATUS_ERROR = 0x8000,
 };
 
 struct module_info_s {
@@ -54,7 +63,15 @@ module_info const * const * puflib_get_modules();
  * being returned does not imply that the running system is supported by it, so
  * ->is_hw_supported() must be called on any module before using it.
  */
-module_info const * puflib_get_module( char const * name );
+module_info const * puflib_get_module(char const * name);
+
+/**
+ * Query the status of a module.
+ * @param module - module to check
+ * @return bitwise OR of status flags, or MODULE_STATUS_ERROR on error (with
+ *  errno set).
+ */
+enum module_status puflib_module_status(module_info const * module);
 
 /**
  * Set a callback function to receive status messages. This defaults to NULL,

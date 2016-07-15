@@ -17,7 +17,9 @@ static puflib_query_handler_p volatile QUERY_CALLBACK = NULL;
 
 static bool storage_type_is_dir(enum puflib_storage_type type)
 {
-    return type == STORAGE_TEMP_DIR || type == STORAGE_FINAL_DIR;
+    return type == STORAGE_TEMP_DIR
+        || type == STORAGE_FINAL_DIR
+        || type == STORAGE_DISABLED_DIR;
 }
 
 module_info const * const * puflib_get_modules()
@@ -34,6 +36,52 @@ module_info const * puflib_get_module( char const * name )
         }
     }
     return NULL;
+}
+
+
+enum module_status puflib_module_status(module_info const * module)
+{
+    enum module_status status = 0;
+    char * path_f = NULL;
+    char * path_d = NULL;
+    char * path_dis_f = NULL;
+    char * path_dis_d = NULL;
+
+    path_f = puflib_get_nv_store_path(module->name, STORAGE_FINAL_FILE);
+    if (!path_f) goto err;
+    path_d = puflib_get_nv_store_path(module->name, STORAGE_FINAL_DIR);
+    if (!path_d) goto err;
+    path_dis_f = puflib_get_nv_store_path(module->name, STORAGE_DISABLED_FILE);
+    if (!path_dis_f) goto err;
+    path_dis_d = puflib_get_nv_store_path(module->name, STORAGE_DISABLED_DIR);
+    if (!path_dis_d) goto err;
+
+    bool access_f = puflib_check_access(path_f, false);
+    bool access_d = puflib_check_access(path_d, true);
+    bool access_dis_f = puflib_check_access(path_dis_f, false);
+    bool access_dis_d = puflib_check_access(path_dis_d, true);
+
+    if (access_dis_f || access_dis_d) {
+        status |= MODULE_PROVISIONED | MODULE_DISABLED;
+    }
+
+    if (access_f || access_d) {
+        status |= MODULE_PROVISIONED;
+    }
+
+    free(path_f);
+    free(path_d);
+    free(path_dis_f);
+    free(path_dis_d);
+
+    return status;
+
+err:
+    if (path_f) free(path_f);
+    if (path_d) free(path_d);
+    if (path_dis_f) free(path_dis_f);
+    if (path_dis_d) free(path_dis_d);
+    return MODULE_STATUS_ERROR;
 }
 
 
