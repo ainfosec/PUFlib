@@ -1,19 +1,21 @@
-// PUFlib platform-dependent functions
-//
 // (C) Copyright 2016 Assured Information Security, Inc.
 //
-// Internal header, not to be installed with library.
-//
-// These are functions used by puflib and its modules that are platform-
-// dependent. The corresponding sources are at src/platform-*.c, one per
-// supported platform.
+// Internal header, to expose internal puflib functions for use by
+// tools like pufctl.
 
-#ifndef _PUFLIB_PLATFORM_H_
-#define _PUFLIB_PLATFORM_H_
+#ifndef _PUFLIB_INTERNAL_H_
+#define _PUFLIB_INTERNAL_H_
 
 #include <stdbool.h>
 #include <stdio.h>
 #include <puflib_module.h>
+
+/******************************************************************************
+ * PLATFORM LIBRARY                                                           *
+ *                                                                            *
+ * These functions are to be implemented in a platform-$PLATFORM.c file       *
+ * containing platform-specific functions.                                    *
+ *****************************************************************************/
 
 /**
  * Return the path separator on this platform.
@@ -29,7 +31,7 @@ char const * puflib_get_path_sep();
  *
  * @return path to directory on success, NULL on error (with errno set)
  */
-char * puflib_get_nv_store_path();
+char * puflib_get_nv_store_path(char const * module_name, enum puflib_storage_type type);
 
 /**
  * Create a directory and all parent directories that don't already exist. This
@@ -89,4 +91,4 @@ bool puflib_check_access(char const * path, bool isdirectory);
  */
 bool puflib_delete_tree(char const * path);
 
-#endif // _PUFLIB_PLATFORM_H
+#endif // _PUFLIB_INTERNAL_H_

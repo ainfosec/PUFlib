@@ -5,7 +5,7 @@
 //
 
 #include <puflib.h>
-#include "platform.h"
+#include <puflib_internal.h>
 #include "misc.h"
 
 #include <string.h>

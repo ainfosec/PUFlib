@@ -6,7 +6,7 @@
 
 #define _XOPEN_SOURCE 700
 
-#include "platform.h"
+#include <puflib_internal.h>
 #include "misc.h"
 #include <puflib.h>
 #include <limits.h>
