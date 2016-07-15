@@ -27,24 +27,31 @@ char const * puflib_get_path_sep()
 
 char * puflib_get_nv_store_path(char const * module_name, enum puflib_storage_type type)
 {
+    char const * typedir;
+
+    switch (type) {
+    case STORAGE_TEMP_FILE:
+    case STORAGE_TEMP_DIR:
+        typedir = "temp/";
+        break;
+
+    case STORAGE_FINAL_FILE:
+    case STORAGE_FINAL_DIR:
+        typedir = "final/";
+        break;
+
+    case STORAGE_DISABLED_FILE:
+    case STORAGE_DISABLED_DIR:
+        typedir = "disabled/";
+        break;
+
+    default:
+        return NULL;
+    }
+
     if (getuid() == 0) {
         char const * basepath = "/var/lib/puflib/";
-        switch (type) {
-        case STORAGE_TEMP_FILE:
-        case STORAGE_TEMP_DIR:
-            return puflib_concat(basepath, "temp/", module_name, NULL);
-
-        case STORAGE_FINAL_FILE:
-        case STORAGE_FINAL_DIR:
-            return puflib_concat(basepath, "final/", module_name, NULL);
-
-        case STORAGE_DISABLED_FILE:
-        case STORAGE_DISABLED_DIR:
-            return puflib_concat(basepath, "disabled/", module_name, NULL);
-
-        default:
-            return NULL;
-        }
+        return puflib_concat("/var/lib/puflib/", typedir, module_name, NULL);
     } else {
         char const * home = getenv("HOME");
         char const * subdir = "/.local/lib/puflib/";
@@ -52,22 +59,7 @@ char * puflib_get_nv_store_path(char const * module_name, enum puflib_storage_ty
             errno = ENOENT;
             return NULL;
         }
-        switch(type) {
-        case STORAGE_TEMP_FILE:
-        case STORAGE_TEMP_DIR:
-            return puflib_concat(home, subdir, "temp/", module_name, NULL);
-
-        case STORAGE_FINAL_FILE:
-        case STORAGE_FINAL_DIR:
-            return puflib_concat(home, subdir, "final/", module_name, NULL);
-
-        case STORAGE_DISABLED_FILE:
-        case STORAGE_DISABLED_DIR:
-            return puflib_concat(home, subdir, "disabled/", module_name, NULL);
-
-        default:
-            return NULL;
-        }
+        return puflib_concat(home, subdir, typedir, module_name, NULL);
     }
 }
 
