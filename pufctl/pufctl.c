@@ -179,6 +179,42 @@ static int do_provision(char const * modname, bool noninteractive)
 }
 
 
+static int do_deprovision(int argc, char ** argv)
+{
+    // First check that all modules exist, and abort before doing anything if
+    // not.
+    for (int i = 0; i < argc; ++i) {
+        if (!puflib_get_module(argv[i])) {
+            fprintf(stderr, "pufctl: cannot deprovision module \"%s\": does not exist\n",
+                    argv[i]);
+            return 1;
+        }
+    }
+
+    // Now deprovision all listed
+    for (int i = 0; i < argc; ++i) {
+        module_info const * mod = puflib_get_module(argv[i]);
+        assert(mod);
+        enum module_status status = puflib_module_status(mod);
+        if (status == MODULE_STATUS_ERROR) {
+            perror("puflib_module_status");
+            return 1;
+        }
+        if (!(status & MODULE_PROVISIONED)) {
+            fprintf(stdout, "pufctl: skipping module \"%s\": already deprovisioned\n",
+                    argv[i]);
+        } else {
+            if (puflib_deprovision(mod)) {
+                perror("puflib_deprovision");
+                return 1;
+            }
+        }
+    }
+
+    return 0;
+}
+
+
 int main(int argc, char ** argv)
 {
     struct opts opts = {0};
@@ -206,6 +242,13 @@ int main(int argc, char ** argv)
             return 1;
         } else {
             return do_provision(opts.argv[1], opts.noninteractive);
+        }
+    } else if (!strcmp(opts.argv[0], "deprovision")) {
+        if (opts.argc < 2) {
+            fprintf(stderr, "pufctl: expected at least one argument to command \"deprovision\". Try --help\n");
+            return 1;
+        } else {
+            return do_deprovision(opts.argc - 1, opts.argv + 1);
         }
     } else {
         fprintf(stderr, "pufctl: unrecognized command '%s'\n", opts.argv[0]);

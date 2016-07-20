@@ -116,7 +116,31 @@ static enum provisioning_status provision_continue(FILE *f)
         if (puflib_delete_nv_store(&MODULE_INFO, STORAGE_TEMP_FILE)) {
             puflib_report(&MODULE_INFO, STATUS_ERROR, strerror(errno));
             return PROVISION_ERROR;
-        } else {
+        }
+
+        {
+            char * final = puflib_create_nv_store(&MODULE_INFO, STORAGE_FINAL_FILE);
+            if (!final) {
+                puflib_perror(&MODULE_INFO);
+                return PROVISION_ERROR;
+            }
+            FILE * f = fopen(final, "w");
+            if (!f) {
+                int errno_hold = errno;
+                free(final);
+                errno = errno_hold;
+                puflib_perror(&MODULE_INFO);
+                return PROVISION_ERROR;
+            }
+            free(final);
+            if (fputs("provisioned", f) == EOF) {
+                int errno_hold = errno;
+                fclose(f);
+                errno = errno_hold;
+                puflib_perror(&MODULE_INFO);
+                return PROVISION_ERROR;
+            }
+            fclose(f);
             return PROVISION_COMPLETE;
         }
 

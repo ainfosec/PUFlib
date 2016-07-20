@@ -50,7 +50,6 @@ char * puflib_get_nv_store_path(char const * module_name, enum puflib_storage_ty
     }
 
     if (getuid() == 0) {
-        char const * basepath = "/var/lib/puflib/";
         return puflib_concat("/var/lib/puflib/", typedir, module_name, NULL);
     } else {
         char const * home = getenv("HOME");

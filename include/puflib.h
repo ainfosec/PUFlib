@@ -13,8 +13,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define PUFLIB_MODULE_NAME_MAX 100
-
 enum provisioning_status {
     PROVISION_NOT_SUPPORTED,
     PROVISION_INCOMPLETE,
@@ -72,6 +70,13 @@ module_info const * puflib_get_module(char const * name);
  *  errno set).
  */
 enum module_status puflib_module_status(module_info const * module);
+
+/**
+ * Deprovision the module. No-op if the module is not provisioned.
+ * @param module - module to deprovision
+ * @return true on error
+ */
+bool puflib_deprovision(module_info const * module);
 
 /**
  * Set a callback function to receive status messages. This defaults to NULL,
