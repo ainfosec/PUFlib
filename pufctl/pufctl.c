@@ -179,19 +179,41 @@ static int do_provision(char const * modname, bool noninteractive)
 }
 
 
-static int do_deprovision(int argc, char ** argv)
+enum module_simple_actions { DEPROVISION, ENABLE, DISABLE };
+
+
+static int do_simple(int argc, char ** argv, enum module_simple_actions action)
 {
+    char * action_name = NULL;
+
+    puflib_set_status_handler(&status_handler);
+    puflib_set_query_handler(&query_handler);
+
+    switch (action) {
+    case DEPROVISION:
+        action_name = "deprovision";
+        break;
+    case ENABLE:
+        action_name = "enable";
+        break;
+    case DISABLE:
+        action_name = "disable";
+        break;
+    default:
+        fprintf(stderr, "pufctl: internal error: unknown simple action\n");
+        return 1;
+    }
+
     // First check that all modules exist, and abort before doing anything if
     // not.
     for (int i = 0; i < argc; ++i) {
         if (!puflib_get_module(argv[i])) {
-            fprintf(stderr, "pufctl: cannot deprovision module \"%s\": does not exist\n",
-                    argv[i]);
+            fprintf(stderr, "pufctl: cannot %s module \"%s\": does not exist\n",
+                    action_name, argv[i]);
             return 1;
         }
     }
 
-    // Now deprovision all listed
     for (int i = 0; i < argc; ++i) {
         module_info const * mod = puflib_get_module(argv[i]);
         assert(mod);
@@ -200,14 +222,25 @@ static int do_deprovision(int argc, char ** argv)
             perror("puflib_module_status");
             return 1;
         }
-        if (!(status & MODULE_PROVISIONED)) {
-            fprintf(stdout, "pufctl: skipping module \"%s\": already deprovisioned\n",
-                    argv[i]);
-        } else {
+        switch (action) {
+        case DEPROVISION:
             if (puflib_deprovision(mod)) {
                 perror("puflib_deprovision");
                 return 1;
             }
+            break;
+        case ENABLE:
+            if (puflib_enable(mod)) {
+                perror("puflib_enable");
+                return 1;
+            }
+            break;
+        case DISABLE:
+            if (puflib_disable(mod)) {
+                perror("puflib_disable");
+                return 1;
+            }
+            break;
         }
     }
 
@@ -248,7 +281,21 @@ int main(int argc, char ** argv)
             fprintf(stderr, "pufctl: expected at least one argument to command \"deprovision\". Try --help\n");
             return 1;
         } else {
-            return do_deprovision(opts.argc - 1, opts.argv + 1);
+            return do_simple(opts.argc - 1, opts.argv + 1, DEPROVISION);
+        }
+    } else if (!strcmp(opts.argv[0], "enable")) {
+        if (opts.argc < 2) {
+            fprintf(stderr, "pufctl: expected at least one argument to command \"enable\". Try --help\n");
+            return 1;
+        } else {
+            return do_simple(opts.argc - 1, opts.argv + 1, ENABLE);
+        }
+    } else if (!strcmp(opts.argv[0], "disable")) {
+        if (opts.argc < 2) {
+            fprintf(stderr, "pufctl: expected at least one argument to command \"disable\". Try --help\n");
+            return 1;
+        } else {
+            return do_simple(opts.argc - 1, opts.argv + 1, DISABLE);
         }
     } else {
         fprintf(stderr, "pufctl: unrecognized command '%s'\n", opts.argv[0]);

@@ -10,6 +10,7 @@
 
 #include <string.h>
 #include <errno.h>
+#include <assert.h>
 
 extern module_info const * const PUFLIB_MODULES[];
 static puflib_status_handler_p volatile STATUS_CALLBACK = NULL;
@@ -87,16 +88,26 @@ err:
 
 bool puflib_deprovision(module_info const * module)
 {
-    char *store_file_path = puflib_get_nv_store(module, STORAGE_FINAL_FILE);
-    char *store_dir_path  = puflib_get_nv_store(module, STORAGE_FINAL_DIR);
+    char * store_file_path = NULL;
+    char * store_dir_path = NULL;
 
-    if (store_file_path) {
+    store_file_path = puflib_get_nv_store_path(module->name, STORAGE_FINAL_FILE);
+    if (!store_file_path) {
+        goto err;
+    }
+
+    store_dir_path = puflib_get_nv_store_path(module->name, STORAGE_FINAL_DIR);
+    if (!store_dir_path) {
+        goto err;
+    }
+
+    if (!puflib_check_access(store_file_path, false)) {
         if (remove(store_file_path)) {
             goto err;
         }
     }
 
-    if (store_dir_path) {
+    if (!puflib_check_access(store_dir_path, true)) {
         if (puflib_delete_tree(store_dir_path)) {
             goto err;
         }
@@ -114,6 +125,97 @@ err:
         errno = errno_hold;
         return true;
     }
+}
+
+
+static bool puflib_en_dis(module_info const * module, bool enable)
+{
+    char * store_file_en_path = NULL;
+    char * store_dir_en_path = NULL;
+    char * store_file_dis_path = NULL;
+    char * store_dir_dis_path = NULL;
+
+    store_file_en_path = puflib_get_nv_store_path(module->name, STORAGE_FINAL_FILE);
+    if (!store_file_en_path) goto err;
+
+    store_dir_en_path = puflib_get_nv_store_path(module->name, STORAGE_FINAL_DIR);
+    if (!store_dir_en_path) goto err;
+
+    store_file_dis_path = puflib_get_nv_store_path(module->name, STORAGE_DISABLED_FILE);
+    if (!store_file_dis_path) goto err;
+
+    store_dir_dis_path = puflib_get_nv_store_path(module->name, STORAGE_DISABLED_DIR);
+    if (!store_dir_dis_path) goto err;
+
+    char * file_old     = enable ? store_file_dis_path : store_file_en_path;
+    char * dir_old      = enable ? store_dir_dis_path : store_dir_en_path;
+    char * file_new     = enable ? store_file_en_path : store_file_dis_path;
+    char * dir_new      = enable ? store_dir_en_path : store_dir_dis_path;
+
+    bool acc_file_old   = !puflib_check_access(file_old, false);
+    bool acc_dir_old    = !puflib_check_access(dir_old, true);
+    bool acc_file_new   = !puflib_check_access(file_new, false);
+    bool acc_dir_new    = !puflib_check_access(dir_new, true);
+
+    // Create partial paths first, if they don't exist
+    if (acc_file_old) {
+        if (puflib_create_directory_tree(file_new, true)) {
+            goto err;
+        }
+    }
+    if (acc_dir_old) {
+        if (puflib_create_directory_tree(dir_new, true)) {
+            goto err;
+        }
+    }
+
+    if ((acc_file_new || acc_dir_new) && (acc_file_old || acc_dir_old)) {
+        puflib_report_fmt(module, STATUS_ERROR,
+                "cannot %s module - both enabled and disabled stores exist",
+                enable ? "enable" : "disable");
+        goto err;
+    }
+
+    if (acc_file_new || acc_dir_new) {
+        goto nop;
+    }
+
+    if (acc_file_old) {
+        if (rename(file_old, file_new)) {
+            goto err;
+        }
+    }
+
+    if (acc_dir_old && strcmp(file_old, dir_old)) {
+        if (rename(dir_old, dir_new)) {
+            goto err;
+        }
+    }
+nop:
+    assert(store_file_en_path);     free(store_file_en_path);
+    assert(store_dir_en_path);      free(store_dir_en_path);
+    assert(store_file_dis_path);    free(store_file_dis_path);
+    assert(store_dir_dis_path);     free(store_dir_dis_path);
+    return false;
+
+err:
+    if(store_file_en_path)      free(store_file_en_path);
+    if(store_dir_en_path)       free(store_dir_en_path);
+    if(store_file_dis_path)     free(store_file_dis_path);
+    if(store_dir_dis_path)      free(store_dir_dis_path);
+    return true;
+}
+
+
+bool puflib_enable(module_info const * module)
+{
+    return puflib_en_dis(module, true);
+}
+
+
+bool puflib_disable(module_info const * module)
+{
+    return puflib_en_dis(module, false);
 }
 
 

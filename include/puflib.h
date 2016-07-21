@@ -79,6 +79,22 @@ enum module_status puflib_module_status(module_info const * module);
 bool puflib_deprovision(module_info const * module);
 
 /**
+ * Enable the module if disabled. No-op if the module is not disabled or not
+ * provisioned.
+ * @param module - module to enable
+ * @return true on error
+ */
+bool puflib_enable(module_info const * module);
+
+/**
+ * Disable the module if enabled. No-op if the module is not enabled or not
+ * provisionsed.
+ * @param module - module to enable
+ * @return true on error
+ */
+bool puflib_disable(module_info const * module);
+
+/**
  * Set a callback function to receive status messages. This defaults to NULL,
  * so any messages generated before this is called will be dropped!
  *
