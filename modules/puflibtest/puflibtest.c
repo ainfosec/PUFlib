@@ -12,7 +12,8 @@
 bool is_hw_supported();
 enum provisioning_status provision();
 int8_t * chal_resp();
-
+bool seal(uint8_t const * data_in, size_t data_in_len, uint8_t ** data_out, size_t * data_out_len);
+bool unseal(uint8_t const * data_in, size_t data_in_len, uint8_t ** data_out, size_t * data_out_len);
 
 module_info const MODULE_INFO =
 {
@@ -22,6 +23,8 @@ module_info const MODULE_INFO =
     .is_hw_supported = &is_hw_supported,
     .provision = &provision,
     .chal_resp = &chal_resp,
+    .seal = &seal,
+    .unseal = &unseal,
 };
 
 
@@ -35,6 +38,31 @@ int8_t* chal_resp()
 {
     return NULL;
 }
+
+
+bool seal(uint8_t const * data_in, size_t data_in_len, uint8_t ** data_out, size_t * data_out_len)
+{
+    uint8_t *data_out_buf = malloc(data_in_len);
+
+    if (!data_out_buf) {
+        puflib_perror(&MODULE_INFO);
+        return true;
+    }
+
+    memcpy(data_out_buf, data_in, data_in_len);
+    *data_out = data_out_buf;
+    *data_out_len = data_in_len;
+
+    return false;
+}
+
+
+bool unseal(uint8_t const * data_in, size_t data_in_len, uint8_t ** data_out, size_t * data_out_len)
+{
+    // Hey, it's a no-op anyway...
+    return seal(data_in, data_in_len, data_out, data_out_len);
+}
+
 
 static enum provisioning_status provision_start(FILE *f);
 static enum provisioning_status provision_continue(FILE *f);

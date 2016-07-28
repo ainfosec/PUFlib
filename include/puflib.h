@@ -37,6 +37,8 @@ struct module_info_s {
   bool (*is_hw_supported)();
   enum provisioning_status (*provision)();
   int8_t * (*chal_resp)();
+  bool (*seal  )(uint8_t const * data_in, size_t data_in_len, uint8_t ** data_out, size_t * data_out_len);
+  bool (*unseal)(uint8_t const * data_in, size_t data_in_len, uint8_t ** data_out, size_t * data_out_len);
 };
 typedef struct module_info_s module_info;
 
@@ -71,6 +73,44 @@ module_info const * puflib_get_module(char const * name);
  *  errno set).
  */
 enum module_status puflib_module_status(module_info const * module);
+
+/**
+ * Seal a secret. The input data will be encrypted by the PUF module, and the
+ * output data will be passed as a newly allocated block through data_out and
+ * data_out_len. Caller is responsible for freeing data_out.
+ *
+ * @param module - module to use
+ * @param data_in - data to be sealed
+ * @param data_in_len - length of data_in, in bytes
+ * @param data_out - pointer to a (uint8_t *) to receive the data.
+ *  Caller is responsible for freeing.
+ * @param data_out_len - pointer to a size_t to receive the output data's
+ *  length, in bytes.
+ *
+ * @return true on error
+ */
+bool puflib_seal(module_info const * module,
+        uint8_t const * data_in, size_t data_in_len,
+        uint8_t ** data_out, size_t * data_out_len);
+
+/**
+ * Unseal a secret. The input data will be decrypted by the PUF module, and the
+ * output data will be passed as a newly allocated block through data_out and
+ * data_out_len. Caller is responsible for freeing data_out.
+ *
+ * @param module - module to use
+ * @param data_in - data to be unsealed
+ * @param data_in_len - length of data_in, in bytes
+ * @param data_out - pointer to a (uint8_t *) to receive the data.
+ *  Caller is responsible for freeing.
+ * @param data_out_len - pointer to a size_t to receive the output data's
+ *  length, in bytes.
+ *
+ * @return true on error, including if the data cannot be decrypted.
+ */
+bool puflib_unseal(module_info const * module,
+        uint8_t const * data_in, size_t data_in_len,
+        uint8_t ** data_out, size_t * data_out_len);
 
 /**
  * Deprovision the module. No-op if the module is not provisioned.

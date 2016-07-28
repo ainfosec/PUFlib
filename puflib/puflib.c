@@ -80,6 +80,30 @@ err:
 }
 
 
+bool puflib_seal(module_info const * module,
+        uint8_t const * data_in, size_t data_in_len,
+        uint8_t ** data_out, size_t * data_out_len)
+{
+    if (module) {
+        return module->seal(data_in, data_in_len, data_out, data_out_len);
+    } else {
+        return true;
+    }
+}
+
+
+bool puflib_unseal(module_info const * module,
+        uint8_t const * data_in, size_t data_in_len,
+        uint8_t ** data_out, size_t * data_out_len)
+{
+    if (module) {
+        return module->unseal(data_in, data_in_len, data_out, data_out_len);
+    } else {
+        return true;
+    }
+}
+
+
 bool puflib_deprovision(module_info const * module)
 {
     static const struct {
