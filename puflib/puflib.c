@@ -82,43 +82,36 @@ err:
 
 bool puflib_deprovision(module_info const * module)
 {
-    char * store_file_path = NULL;
-    char * store_dir_path = NULL;
+    static const struct {
+        enum puflib_storage_type stype;
+        bool is_dir;
+    } paths[] = {
+        { STORAGE_FINAL_FILE, false },
+        { STORAGE_FINAL_DIR, true },
+        { STORAGE_DISABLED_FILE, false },
+        { STORAGE_DISABLED_DIR, true },
+    };
 
-    store_file_path = puflib_get_nv_store_path(module->name, STORAGE_FINAL_FILE);
-    if (!store_file_path) {
-        goto err;
-    }
-
-    store_dir_path = puflib_get_nv_store_path(module->name, STORAGE_FINAL_DIR);
-    if (!store_dir_path) {
-        goto err;
-    }
-
-    if (!puflib_check_access(store_file_path, false)) {
-        if (remove(store_file_path)) {
-            goto err;
+    for (size_t i = 0; i < sizeof(paths)/sizeof(paths[0]); ++i) {
+        char * path = puflib_get_nv_store_path(module->name, paths[i].stype);
+        if (!path) {
+            return true;
         }
-    }
 
-    if (!puflib_check_access(store_dir_path, true)) {
-        if (puflib_delete_tree(store_dir_path)) {
-            goto err;
+        if (!puflib_check_access(path, paths[i].is_dir)) {
+            if (paths[i].is_dir ? puflib_delete_tree(path) : remove(path)) {
+                goto err;
+            }
         }
-    }
 
-    if (store_file_path)    free(store_file_path);
-    if (store_dir_path)     free(store_dir_path);
-    return false;
-
+        free(path);
+        continue;
 err:
-    {
-        int errno_hold = errno;
-        if (store_file_path)    free(store_file_path);
-        if (store_dir_path)     free(store_dir_path);
-        errno = errno_hold;
+        free(path);
         return true;
     }
+
+    return false;
 }
 
 
