@@ -307,10 +307,6 @@ int main(int argc, char ** argv)
         return 0;
     }
 
-    if (opts.noninteractive) {
-        puts("noninteractive");
-    }
-
     if (opts.argc == 0 || !strcmp(opts.argv[0], "list")) {
         return do_list(true);
     } else if (!strcmp(opts.argv[0], "provisioned")) {
