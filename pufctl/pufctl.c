@@ -164,6 +164,57 @@ static int do_provision(char const * modname, bool noninteractive)
     module_info const * module = puflib_get_module(modname);
 
     if (module) {
+        enum module_status status = puflib_module_status(module);
+        if (status == MODULE_STATUS_ERROR) {
+            perror("puflib_module_status");
+            return 1;
+        }
+        if (status & MODULE_PROVISIONED) {
+            fprintf(stderr, "pufctl: cannot provision module \"%s\": already provisioned\n",
+                    modname);
+            return 1;
+        } else if (status & MODULE_IN_PROGRESS) {
+            fprintf(stderr, "pufctl: cannot provision module \"%s\": already started provisioning. Try \"continue\"\n",
+                    modname);
+            return 1;
+        }
+        if (module->is_hw_supported()) {
+            module->provision();
+            return 0;
+        } else {
+            fprintf(stderr, "pufctl: module \"%s\" does not support this hardware\n",
+                    modname);
+            return 1;
+        }
+    } else {
+        fprintf(stderr, "pufctl: module \"%s\" not found\n", modname);
+        return 1;
+    }
+}
+
+
+static int do_continue(char const * modname, bool noninteractive)
+{
+    puflib_set_status_handler(&status_handler);
+    puflib_set_query_handler(&query_handler);
+
+    module_info const * module = puflib_get_module(modname);
+
+    if (module) {
+        enum module_status status = puflib_module_status(module);
+        if (status == MODULE_STATUS_ERROR) {
+            perror("puflib_module_status");
+            return 1;
+        }
+        if (status & MODULE_PROVISIONED) {
+            fprintf(stderr, "pufctl: cannot provision module \"%s\": already provisioned\n",
+                    modname);
+            return 1;
+        } else if (!(status & MODULE_IN_PROGRESS)) {
+            fprintf(stderr, "pufctl: cannot continue provisioning module \"%s\": haven't started yet. Try \"provision\"\n",
+                    modname);
+            return 1;
+        }
         if (module->is_hw_supported()) {
             module->provision();
             return 0;
@@ -275,6 +326,13 @@ int main(int argc, char ** argv)
             return 1;
         } else {
             return do_provision(opts.argv[1], opts.noninteractive);
+        }
+    } else if (!strcmp(opts.argv[0], "continue")) {
+        if (opts.argc != 2) {
+            fprintf(stderr, "pufctl: expected one argument to command \"continue\". Try --help\n");
+            return 1;
+        } else {
+            return do_continue(opts.argv[1], opts.noninteractive);
         }
     } else if (!strcmp(opts.argv[0], "deprovision")) {
         if (opts.argc < 2) {

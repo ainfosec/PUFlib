@@ -26,6 +26,7 @@ enum provisioning_status {
 enum module_status {
     MODULE_DISABLED = 0x01,
     MODULE_PROVISIONED = 0x02,
+    MODULE_IN_PROGRESS = 0x04,
     MODULE_STATUS_ERROR = 0x8000,
 };
 

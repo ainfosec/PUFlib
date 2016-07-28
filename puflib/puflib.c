@@ -43,11 +43,17 @@ module_info const * puflib_get_module( char const * name )
 enum module_status puflib_module_status(module_info const * module)
 {
     enum module_status status = 0;
+    char * path_temp_f = NULL;
+    char * path_temp_d = NULL;
     char * path_f = NULL;
     char * path_d = NULL;
     char * path_dis_f = NULL;
     char * path_dis_d = NULL;
 
+    path_temp_f = puflib_get_nv_store_path(module->name, STORAGE_TEMP_FILE);
+    if (!path_temp_f) goto err;
+    path_temp_d = puflib_get_nv_store_path(module->name, STORAGE_TEMP_DIR);
+    if (!path_temp_d) goto err;
     path_f = puflib_get_nv_store_path(module->name, STORAGE_FINAL_FILE);
     if (!path_f) goto err;
     path_d = puflib_get_nv_store_path(module->name, STORAGE_FINAL_DIR);
@@ -57,10 +63,16 @@ enum module_status puflib_module_status(module_info const * module)
     path_dis_d = puflib_get_nv_store_path(module->name, STORAGE_DISABLED_DIR);
     if (!path_dis_d) goto err;
 
+    bool access_temp_f = !puflib_check_access(path_temp_f, false);
+    bool access_temp_d = !puflib_check_access(path_temp_d, true);
     bool access_f = !puflib_check_access(path_f, false);
     bool access_d = !puflib_check_access(path_d, true);
     bool access_dis_f = !puflib_check_access(path_dis_f, false);
     bool access_dis_d = !puflib_check_access(path_dis_d, true);
+
+    if (access_temp_f || access_temp_d) {
+        status |= MODULE_IN_PROGRESS;
+    }
 
     if (access_dis_f || access_dis_d) {
         status |= MODULE_PROVISIONED | MODULE_DISABLED;
@@ -70,6 +82,8 @@ enum module_status puflib_module_status(module_info const * module)
         status |= MODULE_PROVISIONED;
     }
 
+    free(path_temp_f);
+    free(path_temp_d);
     free(path_f);
     free(path_d);
     free(path_dis_f);
@@ -78,6 +92,8 @@ enum module_status puflib_module_status(module_info const * module)
     return status;
 
 err:
+    if (path_temp_f) free(path_temp_f);
+    if (path_temp_d) free(path_temp_d);
     if (path_f) free(path_f);
     if (path_d) free(path_d);
     if (path_dis_f) free(path_dis_f);
