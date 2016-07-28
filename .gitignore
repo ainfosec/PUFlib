@@ -30,6 +30,7 @@ test
 *.x86_64
 *.hex
 pufctl/pufctl
+puf/puf
 
 # Debug files
 *.dSYM/

@@ -1,0 +1,43 @@
+.TH PUF 1
+.SH DRAFT
+
+.SH NAME
+puf \- seal and unseal secrets using PUFlib PUFs
+
+.SH SYNOPSIS
+.B puf
+[OPTIONS]
+COMMAND
+[...]
+
+.SH DESCRIPTION
+.B puf
+may be used to seal and unseal secrets using the PUF modules made available by PUFlib.
+To find the modules that are available, see
+.BR pufctl (1).
+
+.SH OPTIONS
+.TP
+.BR \-h ", " \-\-help
+Print a short help text and exit.
+.TP
+.BR \-\-input\-base64
+Input data is encoded in base64. Otherwise, raw.
+.TP
+.BR \-\-output\-base64
+Output data is encoded in base64. Otherwise, raw.
+
+.SH COMMANDS
+.TP
+.BR seal " " \fIMODULE\fR " " \fIINPUT\fR " " \fR[\fIOUTPUT\fR]
+Seal the file \fIINPUT\fR using \fIMODULE\fR, with encrypted data to file \fIOUTPUT\fR.
+Both \fIINPUT\fR and \fIOUTPUT\fR may be \- to use standard input and output;
+this is the default for \fIOUTPUT\fR if omitted.
+.TP
+.BR unseal " " \fIMODULE\fR " " \fIINPUT\fR " " \fR[\fIOUTPUT\fR]
+Unseal the file \fIINPUT\fR using \fIMODULE\fR, with decrypted data to file \fIOUTPUT\fR.
+Both \fIINPUT\fR and \fIOUTPUT\fR may be \- to use standard input and output;
+this is the default for \fIOUTPUT\fR if omitted.
+
+.SH "SEE ALSO"
+.BR pufctl (1)

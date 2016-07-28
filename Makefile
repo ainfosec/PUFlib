@@ -33,12 +33,15 @@ endef
 # List all the objects needed here
 OBJECTS = puflib/puflib.o puflib/misc.o puflib/platform-posix.o module_list.o
 
-.PHONY: all clean pufctl ${MODULE_DIRS}
+.PHONY: all clean pufctl puf ${MODULE_DIRS}
 
-all: ${SOFILE} pufctl
+all: ${SOFILE} pufctl puf
 
 pufctl:
 	${MAKE} -C pufctl
+
+puf:
+	${MAKE} -C puf
 
 # Include calculated dependencies
 -include ${OBJECTS:.o=.d}
@@ -77,3 +80,4 @@ clean:
 		$(call module_mf,$${mod},clean); \
 	done
 	make -C pufctl clean
+	make -C puf clean
