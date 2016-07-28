@@ -124,80 +124,66 @@ err:
 
 static bool puflib_en_dis(module_info const * module, bool enable)
 {
-    char * store_file_en_path = NULL;
-    char * store_dir_en_path = NULL;
-    char * store_file_dis_path = NULL;
-    char * store_dir_dis_path = NULL;
+    static const struct {
+        enum puflib_storage_type stype_en;
+        enum puflib_storage_type stype_dis;
+        bool is_dir;
+    } paths[] = {
+        { STORAGE_FINAL_FILE, STORAGE_DISABLED_FILE, false },
+        { STORAGE_FINAL_DIR,  STORAGE_DISABLED_DIR,  true },
+    };
 
-    store_file_en_path = puflib_get_nv_store_path(module->name, STORAGE_FINAL_FILE);
-    if (!store_file_en_path) goto err;
+    for (size_t i = 0; i < sizeof(paths)/sizeof(paths[0]); ++i) {
 
-    store_dir_en_path = puflib_get_nv_store_path(module->name, STORAGE_FINAL_DIR);
-    if (!store_dir_en_path) goto err;
+        char * en_path = NULL, * dis_path = NULL;
 
-    store_file_dis_path = puflib_get_nv_store_path(module->name, STORAGE_DISABLED_FILE);
-    if (!store_file_dis_path) goto err;
+        en_path  = puflib_get_nv_store_path(module->name, paths[i].stype_en);
+        dis_path = puflib_get_nv_store_path(module->name, paths[i].stype_dis);
 
-    store_dir_dis_path = puflib_get_nv_store_path(module->name, STORAGE_DISABLED_DIR);
-    if (!store_dir_dis_path) goto err;
+        if (!en_path)  goto err;
+        if (!dis_path) goto err;
 
-    char * file_old     = enable ? store_file_dis_path : store_file_en_path;
-    char * dir_old      = enable ? store_dir_dis_path : store_dir_en_path;
-    char * file_new     = enable ? store_file_en_path : store_file_dis_path;
-    char * dir_new      = enable ? store_dir_en_path : store_dir_dis_path;
+        char * old_path = enable ? dis_path : en_path;
+        char * new_path = enable ? en_path : dis_path;
 
-    bool acc_file_old   = !puflib_check_access(file_old, false);
-    bool acc_dir_old    = !puflib_check_access(dir_old, true);
-    bool acc_file_new   = !puflib_check_access(file_new, false);
-    bool acc_dir_new    = !puflib_check_access(dir_new, true);
+        bool acc_old = !puflib_check_access(old_path, paths[i].is_dir);
+        bool acc_new = !puflib_check_access(new_path, paths[i].is_dir);
 
-    // Create partial paths first, if they don't exist
-    if (acc_file_old) {
-        if (puflib_create_directory_tree(file_new, true)) {
+        if (acc_old) {
+            if (puflib_create_directory_tree(new_path, true)) {
+                goto err;
+            }
+        }
+
+        if (acc_old && acc_new) {
+            puflib_report_fmt(module, STATUS_ERROR,
+                    "cannot %s module - both enabled and disabled stores exist",
+                    enable ? "enable" : "disable");
             goto err;
         }
-    }
-    if (acc_dir_old) {
-        if (puflib_create_directory_tree(dir_new, true)) {
-            goto err;
+
+        if (acc_new) {
+            goto nop;
         }
-    }
 
-    if ((acc_file_new || acc_dir_new) && (acc_file_old || acc_dir_old)) {
-        puflib_report_fmt(module, STATUS_ERROR,
-                "cannot %s module - both enabled and disabled stores exist",
-                enable ? "enable" : "disable");
-        goto err;
-    }
-
-    if (acc_file_new || acc_dir_new) {
-        goto nop;
-    }
-
-    if (acc_file_old) {
-        if (rename(file_old, file_new)) {
-            goto err;
+        if (acc_old) {
+            if (rename(old_path, new_path)) {
+                goto err;
+            }
         }
-    }
 
-    if (acc_dir_old && strcmp(file_old, dir_old)) {
-        if (rename(dir_old, dir_new)) {
-            goto err;
-        }
-    }
 nop:
-    assert(store_file_en_path);     free(store_file_en_path);
-    assert(store_dir_en_path);      free(store_dir_en_path);
-    assert(store_file_dis_path);    free(store_file_dis_path);
-    assert(store_dir_dis_path);     free(store_dir_dis_path);
-    return false;
+        free(en_path);
+        free(dis_path);
+        continue;
 
 err:
-    if(store_file_en_path)      free(store_file_en_path);
-    if(store_dir_en_path)       free(store_dir_en_path);
-    if(store_file_dis_path)     free(store_file_dis_path);
-    if(store_dir_dis_path)      free(store_dir_dis_path);
-    return true;
+        if (en_path)  free(en_path);
+        if (dis_path) free(dis_path);
+        return true;
+    }
+
+    return false;
 }
 
 
