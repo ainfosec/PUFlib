@@ -158,9 +158,6 @@ static bool query_handler(module_info const * module, char const * key,
 
 static int do_provision(char const * modname, bool noninteractive)
 {
-    puflib_set_status_handler(&status_handler);
-    puflib_set_query_handler(&query_handler);
-
     module_info const * module = puflib_get_module(modname);
 
     if (module) {
@@ -195,9 +192,6 @@ static int do_provision(char const * modname, bool noninteractive)
 
 static int do_continue(char const * modname, bool noninteractive)
 {
-    puflib_set_status_handler(&status_handler);
-    puflib_set_query_handler(&query_handler);
-
     module_info const * module = puflib_get_module(modname);
 
     if (module) {
@@ -236,9 +230,6 @@ enum module_simple_actions { DEPROVISION, ENABLE, DISABLE };
 static int do_simple(int argc, char ** argv, enum module_simple_actions action)
 {
     char * action_name = NULL;
-
-    puflib_set_status_handler(&status_handler);
-    puflib_set_query_handler(&query_handler);
 
     switch (action) {
     case DEPROVISION:
@@ -302,6 +293,10 @@ static int do_simple(int argc, char ** argv, enum module_simple_actions action)
 int main(int argc, char ** argv)
 {
     struct opts opts = {0};
+
+    puflib_set_status_handler(&status_handler);
+    puflib_set_query_handler(&query_handler);
+
 
     if (parse_args(&opts, argc - 1, argv + 1)) {
         return 1;
