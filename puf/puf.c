@@ -258,7 +258,11 @@ int do_seal_unseal(int argc, char ** argv)
     }
 
     size_t write_i = 0;
-    while (!ferror(f_out) && !feof(f_out) && (out_buf_len - write_i)) {
+    while (!feof(f_out) && (out_buf_len - write_i)) {
+        if (ferror(f_out)) {
+            goto err;
+        }
+
         size_t n = fwrite(out_buf + write_i, 1, out_buf_len - write_i, f_out);
         write_i += n;
         if (!n) {
