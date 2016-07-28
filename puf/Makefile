@@ -11,7 +11,7 @@ CC = $(shell command -v colorgcc 2>&1 || echo gcc)
 CFLAGS = -I${CURDIR}/../include -g -Og -Wall -Wextra -std=c99
 LDFLAGS = -L.. -lpuf -lreadline
 
-OBJECTS = puf.o
+OBJECTS = puf.o base64.o
 
 .PHONY: all clean
 

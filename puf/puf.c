@@ -9,6 +9,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <readline/readline.h>
+#include "base64.h"
 
 struct opts {
     bool help;
@@ -180,8 +181,60 @@ err:
 }
 
 
-int do_seal_unseal(int argc, char ** argv)
+/**
+ * Replace a buffer with a base64-encoded copy of itself. The original buffer
+ * will be freed.
+ * @return true on error - on error, the old buffer will be untouched.
+ */
+bool replace_with_b64_encoded(uint8_t ** buffer, size_t * bufsz)
 {
+    size_t new_sz = BASE64_SIZE(*bufsz);
+    uint8_t * newbuf = malloc(new_sz);
+    if (!newbuf) {
+        return true;
+    }
+
+    base64_encode((char *) newbuf, new_sz, *buffer, *bufsz);
+
+    *bufsz = strlen((char *) newbuf);
+    *buffer = newbuf;
+
+    return false;
+}
+
+
+/**
+ * Decode a buffer from base64 and replace it with the raw data. The original
+ * buffer will be freed.
+ * @return true on error - on error, the old buffer will be untouched.
+ */
+bool replace_with_b64_decoded(uint8_t ** buffer, size_t * bufsz)
+{
+    size_t new_sz = *bufsz;
+    uint8_t * newbuf = malloc(new_sz);
+    if (!newbuf) {
+        return true;
+    }
+
+    int n = base64_decode(newbuf, (char const *) *buffer, new_sz);
+
+    if (n < 0) {
+        free(newbuf);
+        return true;
+    } else {
+        *bufsz = (size_t) n;
+        free(*buffer);
+        *buffer = newbuf;
+        return false;
+    }
+}
+
+
+int do_seal_unseal(struct opts opts)
+{
+    int argc = opts.argc;
+    char ** argv = opts.argv;
+
     if (argc != 3 && argc != 4) {
         fprintf(stderr, "pufctl: expected two or three arguments to command \"%s\". Try --help\n", argv[0]);
         return 1;
@@ -230,6 +283,13 @@ int do_seal_unseal(int argc, char ** argv)
         goto perr;
     }
 
+    if (opts.input_base64) {
+        if (replace_with_b64_decoded(&in_buf, &in_buf_len)) {
+            fprintf(stderr, "puf: error decoding base64 data\n");
+            goto err;
+        }
+    }
+
     // Seal or unseal
     bool rc = false;
     if (!strcmp(argv[0], "seal")) {
@@ -254,6 +314,13 @@ int do_seal_unseal(int argc, char ** argv)
         f_out = fopen(argv[3], "w");
         if (!f_out) {
             goto perr;
+        }
+    }
+
+    if (opts.output_base64) {
+        if (replace_with_b64_encoded(&out_buf, &out_buf_len)) {
+            fprintf(stderr, "puf: error encoding base64 data\n");
+            goto err;
         }
     }
 
@@ -316,9 +383,9 @@ int main(int argc, char ** argv)
         fprintf(stderr, "puf: expected a command. Try --help\n");
         return 1;
     } else if (!strcmp(opts.argv[0], "seal") || !strcmp(opts.argv[0], "unseal")) {
-        return do_seal_unseal(opts.argc, opts.argv);
+        return do_seal_unseal(opts);
     } else if (!strcmp(opts.argv[0], "unseal")) {
-        return do_seal_unseal(opts.argc, opts.argv);
+        return do_seal_unseal(opts);
     } else {
         fprintf(stderr, "pufctl: unrecognized command '%s'\n", opts.argv[0]);
         return 1;
