@@ -42,62 +42,40 @@ module_info const * puflib_get_module( char const * name )
 
 enum module_status puflib_module_status(module_info const * module)
 {
+    static const struct {
+        enum puflib_storage_type stype;
+        bool is_dir;
+        enum module_status mask;
+    } paths[] = {
+        { STORAGE_TEMP_FILE,     false, MODULE_IN_PROGRESS },
+        { STORAGE_TEMP_DIR,      true,  MODULE_IN_PROGRESS },
+        { STORAGE_FINAL_FILE,    false, MODULE_PROVISIONED },
+        { STORAGE_FINAL_DIR,     true,  MODULE_PROVISIONED },
+        { STORAGE_DISABLED_FILE, false, MODULE_PROVISIONED | MODULE_DISABLED },
+        { STORAGE_DISABLED_DIR,  true,  MODULE_PROVISIONED | MODULE_DISABLED },
+    };
+
     enum module_status status = 0;
-    char * path_temp_f = NULL;
-    char * path_temp_d = NULL;
-    char * path_f = NULL;
-    char * path_d = NULL;
-    char * path_dis_f = NULL;
-    char * path_dis_d = NULL;
 
-    path_temp_f = puflib_get_nv_store_path(module->name, STORAGE_TEMP_FILE);
-    if (!path_temp_f) goto err;
-    path_temp_d = puflib_get_nv_store_path(module->name, STORAGE_TEMP_DIR);
-    if (!path_temp_d) goto err;
-    path_f = puflib_get_nv_store_path(module->name, STORAGE_FINAL_FILE);
-    if (!path_f) goto err;
-    path_d = puflib_get_nv_store_path(module->name, STORAGE_FINAL_DIR);
-    if (!path_d) goto err;
-    path_dis_f = puflib_get_nv_store_path(module->name, STORAGE_DISABLED_FILE);
-    if (!path_dis_f) goto err;
-    path_dis_d = puflib_get_nv_store_path(module->name, STORAGE_DISABLED_DIR);
-    if (!path_dis_d) goto err;
+    for (size_t i = 0; i < sizeof(paths)/sizeof(paths[0]); ++i) {
 
-    bool access_temp_f = !puflib_check_access(path_temp_f, false);
-    bool access_temp_d = !puflib_check_access(path_temp_d, true);
-    bool access_f = !puflib_check_access(path_f, false);
-    bool access_d = !puflib_check_access(path_d, true);
-    bool access_dis_f = !puflib_check_access(path_dis_f, false);
-    bool access_dis_d = !puflib_check_access(path_dis_d, true);
+        char * path = puflib_get_nv_store_path(module->name, paths[i].stype);
+        if (!path) {
+            goto err;
+        }
 
-    if (access_temp_f || access_temp_d) {
-        status |= MODULE_IN_PROGRESS;
+        bool access_path = !puflib_check_access(path, paths[i].is_dir);
+
+        if (access_path) {
+            status |= paths[i].mask;
+        }
+
+        free(path);
     }
-
-    if (access_dis_f || access_dis_d) {
-        status |= MODULE_PROVISIONED | MODULE_DISABLED;
-    }
-
-    if (access_f || access_d) {
-        status |= MODULE_PROVISIONED;
-    }
-
-    free(path_temp_f);
-    free(path_temp_d);
-    free(path_f);
-    free(path_d);
-    free(path_dis_f);
-    free(path_dis_d);
 
     return status;
 
 err:
-    if (path_temp_f) free(path_temp_f);
-    if (path_temp_d) free(path_temp_d);
-    if (path_f) free(path_f);
-    if (path_d) free(path_d);
-    if (path_dis_f) free(path_dis_f);
-    if (path_dis_d) free(path_dis_d);
     return MODULE_STATUS_ERROR;
 }
 
