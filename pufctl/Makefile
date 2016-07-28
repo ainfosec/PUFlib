@@ -26,7 +26,7 @@ all: pufctl
 	${CC} -MM ${CFLAGS} $*.c -o $*.d
 
 pufctl: ${OBJECTS}
-	${CC} ${LDFLAGS} $^ -o $@
+	${CC} ${CFLAGS} $^ ${LDFLAGS} -o $@
 
 clean:
 	rm -f ${OBJECTS}
