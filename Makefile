@@ -38,10 +38,10 @@ OBJECTS = puflib/puflib.o puflib/misc.o puflib/platform-posix.o module_list.o
 all: ${SOFILE} pufctl puf
 
 pufctl:
-	${MAKE} -C pufctl
+	${MAKE} -C bin pufctl
 
 puf:
-	${MAKE} -C puf
+	${MAKE} -C bin puf
 
 # Include calculated dependencies
 -include ${OBJECTS:.o=.d}
@@ -79,5 +79,4 @@ clean:
 	for mod in ${MODULES}; do \
 		$(call module_mf,$${mod},clean); \
 	done
-	make -C pufctl clean
-	make -C puf clean
+	make -C bin clean

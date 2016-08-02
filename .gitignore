@@ -29,8 +29,8 @@ test
 *.i*86
 *.x86_64
 *.hex
-pufctl/pufctl
-puf/puf
+bin/pufctl
+bin/puf
 
 # Debug files
 *.dSYM/

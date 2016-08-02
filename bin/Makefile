@@ -1,5 +1,5 @@
 ##############################################################
-# pufctl Makefile
+# puf Makefile
 #
 # Author: Chris Pavlina
 ##############################################################
@@ -11,11 +11,11 @@ CC = $(shell command -v colorgcc 2>&1 || echo gcc)
 CFLAGS = -I${CURDIR}/../include -g -Og -Wall -Wextra -std=c99
 LDFLAGS = -L.. -lpuf -lreadline
 
-OBJECTS = pufctl.o
+OBJECTS = puf.o base64.o
 
 .PHONY: all clean
 
-all: pufctl
+all: puf pufctl
 
 # Include calculated dependencies
 -include ${OBJECTS:.o=.d}
@@ -25,10 +25,13 @@ all: pufctl
 	${CC} -c  ${CFLAGS} $*.c -o $*.o
 	${CC} -MM ${CFLAGS} $*.c -o $*.d
 
+puf: ${OBJECTS}
+	${CC} ${CFLAGS} $^ ${LDFLAGS} -o $@
+
 pufctl: ${OBJECTS}
 	${CC} ${CFLAGS} $^ ${LDFLAGS} -o $@
 
 clean:
 	rm -f ${OBJECTS}
 	rm -f ${OBJECTS:.o=.d}
-	rm -f pufctl
+	rm -f pufctl puf
