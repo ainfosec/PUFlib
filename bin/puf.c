@@ -8,86 +8,19 @@
 #include <string.h>
 #include <assert.h>
 #include <errno.h>
+#include <alloca.h>
 #include <readline/readline.h>
+#include "optparse.h"
 #include "base64.h"
 
 struct opts {
     bool help;
     bool input_base64;
     bool output_base64;
+    char * output;
     int argc;
     char ** argv;
 };
-
-
-/**
- * Check whether an argument is a short option (-asdf is a short option,
- * equivalent to -a -s -d -f; --asdf is not and neither is asdf).
- */
-static bool is_short(char const * arg)
-{
-    assert(arg);
-    if (arg[0] == '-') {
-        return arg[1] != '-';
-    } else {
-        return false;
-    }
-}
-
-
-/**
- * Parse the command-line arguments into 'opts'. If anything remains, it will
- * be placed in opts->argc and opts->argv, otherwise opts->argc will be 0 and
- * opts->argv will be NULL.
- *
- * @param opts - structure to receive options
- * @param argc - number of arguments to parse, not including the command name
- * @param argv - arguments to parse, not including the command name
- *
- * @return true on error
- */
-static bool parse_args(struct opts * opts, int argc, char ** argv)
-{
-    for (int i = 0; i < argc; ++i) {
-        if (is_short(argv[i])) {
-            for (int ishort = 1; argv[i][ishort]; ++ishort) {
-                char arg = argv[i][ishort];
-                switch (arg) {
-                    case 'h':
-                        opts->help = true;
-                        break;
-                    default:
-                        fprintf(stderr, "puf: invalid option -- '%c'\n", arg);
-                        return true;
-                }
-            }
-        } else if (!strcmp(argv[i], "--help")) {
-            opts->help = true;
-        } else if (!strcmp(argv[i], "--input-base64")) {
-            opts->input_base64 = true;
-        } else if (!strcmp(argv[i], "--output-base64")) {
-            opts->output_base64 = true;
-        } else if (argv[i][0] != '-') {
-            // This is the end of the arguments
-            opts->argc = argc - i;
-            opts->argv = argv + i;
-            return false;
-        } else if (!strcmp(argv[i], "--")) {
-            // Forced stop - next argument is the end
-            opts->argc = argc - i - 1;
-            opts->argv = argv + i + 1;
-            return false;
-        } else {
-            fprintf(stderr, "puf: unrecognized option '%s'\n", argv[i]);
-            return true;
-        }
-    }
-
-    // Reached the end - no further items
-    opts->argc = 0;
-    opts->argv = NULL;
-    return false;
-}
 
 
 static void usage(void)
@@ -97,8 +30,8 @@ static void usage(void)
     printf("available modules.\n");
     printf("\n");
     printf("commands:\n");
-    printf("  seal MOD IN [OUT]     Seal IN using MOD, to OUT\n");
-    printf("  unseal MOD IN [OUT]   Unseal IN using MOD, to OUT\n");
+    printf("  seal MOD IN [-o OUT]      Seal IN using MOD, to OUT\n");
+    printf("  unseal MOD IN [-o OUT]    Unseal IN using MOD, to OUT\n");
 }
 
 
@@ -235,8 +168,8 @@ int do_seal_unseal(struct opts opts)
     int argc = opts.argc;
     char ** argv = opts.argv;
 
-    if (argc != 3 && argc != 4) {
-        fprintf(stderr, "pufctl: expected two or three arguments to command \"%s\". Try --help\n", argv[0]);
+    if (argc != 3) {
+        fprintf(stderr, "pufctl: expected two arguments to command \"%s\". Try --help\n", argv[0]);
         return 1;
     }
 
@@ -308,13 +241,13 @@ int do_seal_unseal(struct opts opts)
     }
 
     // Write data
-    if (argc < 4 || !strcmp(argv[3], "-")) {
-        f_out = stdout;
-    } else {
-        f_out = fopen(argv[3], "w");
+    if (opts.output) {
+        f_out = fopen(opts.output, "w");
         if (!f_out) {
             goto perr;
         }
+    } else {
+        f_out = stdout;
     }
 
     if (opts.output_base64) {
@@ -370,9 +303,43 @@ int main(int argc, char ** argv)
     puflib_set_status_handler(&status_handler);
     puflib_set_query_handler(&query_handler);
 
-    if (parse_args(&opts, argc - 1, argv + 1)) {
-        return 1;
+    struct optparse options;
+    optparse_init(&options, argv);
+    struct optparse_long longopts[] = {
+        {"help",            'h',    OPTPARSE_NONE},
+        {"input-base64",    'I',    OPTPARSE_NONE},
+        {"output-base64",   'O',    OPTPARSE_NONE},
+        {"output",          'o',    OPTPARSE_REQUIRED},
+        {0}
+    };
+
+    int option;
+    while ((option = optparse_long(&options, longopts, NULL)) != -1) {
+        switch (option) {
+        case 'h':
+            opts.help = true;
+            break;
+        case 'I':
+            opts.input_base64 = true;
+            break;
+        case 'O':
+            opts.output_base64 = true;
+            break;
+        case 'o':
+            opts.output = options.optarg;
+            break;
+        case '?':
+            fprintf(stderr, "%s: %s\n", argv[0], options.errmsg);
+            return 1;
+        }
     }
+
+    char *argv_final[argc];
+    char *arg;
+    while ((arg = optparse_arg(&options))) {
+        argv_final[opts.argc++] = arg;
+    }
+    opts.argv = &argv_final[0];
 
     if (opts.help) {
         usage();

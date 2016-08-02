@@ -11,7 +11,8 @@ CC = $(shell command -v colorgcc 2>&1 || echo gcc)
 CFLAGS = -I${CURDIR}/../include -g -Og -Wall -Wextra -std=c99
 LDFLAGS = -L.. -lpuf -lreadline
 
-OBJECTS = puf.o base64.o
+SOURCES = $(wildcard *.c)
+OBJECTS = ${SOURCES:.c=.o}
 
 .PHONY: all clean
 
@@ -25,10 +26,10 @@ all: puf pufctl
 	${CC} -c  ${CFLAGS} $*.c -o $*.o
 	${CC} -MM ${CFLAGS} $*.c -o $*.d
 
-puf: ${OBJECTS}
+puf: puf.o base64.o optparse.o
 	${CC} ${CFLAGS} $^ ${LDFLAGS} -o $@
 
-pufctl: ${OBJECTS}
+pufctl: pufctl.o optparse.o
 	${CC} ${CFLAGS} $^ ${LDFLAGS} -o $@
 
 clean:

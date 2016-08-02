@@ -8,6 +8,7 @@
 #include <string.h>
 #include <assert.h>
 #include <readline/readline.h>
+#include "optparse.h"
 
 struct opts {
     bool help;
@@ -15,74 +16,6 @@ struct opts {
     int argc;
     char ** argv;
 };
-
-
-/**
- * Check whether an argument is a short option (-asdf is a short option,
- * equivalent to -a -s -d -f; --asdf is not and neither is asdf).
- */
-static bool is_short(char const * arg)
-{
-    assert(arg);
-    if (arg[0] == '-') {
-        return arg[1] != '-';
-    } else {
-        return false;
-    }
-}
-
-
-/**
- * Parse the command-line arguments into 'opts'. If anything remains, it will
- * be placed in opts->argc and opts->argv, otherwise opts->argc will be 0 and
- * opts->argv will be NULL.
- *
- * @param opts - structure to receive options
- * @param argc - number of arguments to parse, not including the command name
- * @param argv - arguments to parse, not including the command name
- *
- * @return true on error
- */
-static bool parse_args(struct opts * opts, int argc, char ** argv)
-{
-    for (int i = 0; i < argc; ++i) {
-        if (is_short(argv[i])) {
-            for (int ishort = 1; argv[i][ishort]; ++ishort) {
-                char arg = argv[i][ishort];
-                switch (arg) {
-                    case 'h':
-                        opts->help = true;
-                        break;
-                    default:
-                        fprintf(stderr, "pufctl: invalid option -- '%c'\n", arg);
-                        return true;
-                }
-            }
-        } else if (!strcmp(argv[i], "--help")) {
-            opts->help = true;
-        } else if (!strcmp(argv[i], "--non-interactive")) {
-            opts->noninteractive = true;
-        } else if (argv[i][0] != '-') {
-            // This is the end of the arguments
-            opts->argc = argc - i;
-            opts->argv = argv + i;
-            return false;
-        } else if (!strcmp(argv[i], "--")) {
-            // Forced stop - next argument is the end
-            opts->argc = argc - i - 1;
-            opts->argv = argv + i + 1;
-            return false;
-        } else {
-            fprintf(stderr, "pufctl: unrecognized option '%s'\n", argv[i]);
-            return true;
-        }
-    }
-
-    // Reached the end - no further items
-    opts->argc = 0;
-    opts->argv = NULL;
-    return false;
-}
 
 
 static void usage(void)
@@ -297,10 +230,35 @@ int main(int argc, char ** argv)
     puflib_set_status_handler(&status_handler);
     puflib_set_query_handler(&query_handler);
 
+    struct optparse options;
+    optparse_init(&options, argv);
+    struct optparse_long longopts[] = {
+        {"help",            'h',    OPTPARSE_NONE},
+        {"non-interactive", 'n', OPTPARSE_NONE},
+        {0}
+    };
 
-    if (parse_args(&opts, argc - 1, argv + 1)) {
-        return 1;
+    int option;
+    while ((option = optparse_long(&options, longopts, NULL)) != -1) {
+        switch (option) {
+        case 'h':
+            opts.help = true;
+            break;
+        case 'n':
+            opts.noninteractive = true;
+            break;
+        case '?':
+            fprintf(stderr, "%s: %s\n", argv[0], options.errmsg);
+            return 1;
+        }
     }
+
+    char *argv_final[argc];
+    char *arg;
+    while ((arg = optparse_arg(&options))) {
+        argv_final[opts.argc++] = arg;
+    }
+    opts.argv = &argv_final[0];
 
     if (opts.help) {
         usage();
