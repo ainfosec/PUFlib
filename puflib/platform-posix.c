@@ -133,7 +133,14 @@ bool puflib_mkdir(char const * path)
 
 bool puflib_check_access(char const * path, bool isdirectory)
 {
-    return access(path, isdirectory ? (R_OK | W_OK | X_OK) : (R_OK | W_OK)) != 0;
+    struct stat sbuf;
+    if (stat(path, &sbuf)) {
+        return true;
+    }
+
+    bool type_good = (isdirectory ? S_ISDIR(sbuf.st_mode) : !S_ISDIR(sbuf.st_mode));
+    return !type_good ||
+        access(path, isdirectory ? (R_OK | W_OK | X_OK) : (R_OK | W_OK)) != 0;
 }
 
 

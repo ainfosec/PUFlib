@@ -77,6 +77,8 @@ bool puflib_mkdir(char const * path);
  * time between checking access and actually opening the file can be exploited.
  * Only use this for basic status reporting and similar.
  *
+ * This fails if the path type does not match @a isdirectory.
+ *
  * @param path - path
  * @param isdirectory - if true, test as a directory rather than as a file.
  * @return false iff the running process can access a path.
