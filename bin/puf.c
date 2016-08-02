@@ -29,9 +29,14 @@ static void usage(void)
     printf("seal and unseal secrets using PUFlib PUFs. Use pufctl to discover\n");
     printf("available modules.\n");
     printf("\n");
+    printf("options:\n");
+    printf("  -I, --input-base64    input is base64-encoded\n");
+    printf("  -O, --output-base64   output is base64-encoded\n");
+    printf("  -o OUT, --output=OUT  output to OUT instead of stdout\n");
+    printf("\n");
     printf("commands:\n");
-    printf("  seal MOD IN [-o OUT]      Seal IN using MOD, to OUT\n");
-    printf("  unseal MOD IN [-o OUT]    Unseal IN using MOD, to OUT\n");
+    printf("  seal MOD IN       Seal IN using MOD\n");
+    printf("  unseal MOD IN     Unseal IN using MOD\n");
 }
 
 
