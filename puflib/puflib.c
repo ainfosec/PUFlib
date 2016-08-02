@@ -114,6 +114,8 @@ bool puflib_deprovision(module_info const * module)
         { STORAGE_FINAL_DIR, true },
         { STORAGE_DISABLED_FILE, false },
         { STORAGE_DISABLED_DIR, true },
+        { STORAGE_TEMP_FILE, false },
+        { STORAGE_TEMP_DIR, true },
     };
 
     for (size_t i = 0; i < sizeof(paths)/sizeof(paths[0]); ++i) {
