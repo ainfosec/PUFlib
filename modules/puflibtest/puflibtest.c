@@ -136,7 +136,10 @@ static enum provisioning_status provision_continue(FILE *f)
     int step = 0;
 
     puflib_report(&MODULE_INFO, STATUS_INFO, "reading from NV store");
-    fscanf(f, "%d", &step);
+    if (fscanf(f, "%d", &step) != 1) {
+        puflib_report(&MODULE_INFO, STATUS_ERROR, "NV store is corrupted");
+        return PROVISION_ERROR;
+    }
 
     switch(step) {
     case 1:
