@@ -9,6 +9,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <alloca.h>
+#include <ctype.h>
 #include <readline/readline.h>
 #include "optparse.h"
 #include "base64.h"
@@ -130,7 +131,7 @@ err:
  */
 bool replace_with_b64_encoded(uint8_t ** buffer, size_t * bufsz)
 {
-    size_t new_sz = BASE64_SIZE(*bufsz);
+    size_t new_sz = BASE64_SIZE(*bufsz) + 1;
     uint8_t * newbuf = malloc(new_sz);
     if (!newbuf) {
         return true;
@@ -138,7 +139,9 @@ bool replace_with_b64_encoded(uint8_t ** buffer, size_t * bufsz)
 
     base64_encode((char *) newbuf, new_sz, *buffer, *bufsz);
 
-    *bufsz = strlen((char *) newbuf);
+    size_t len = strlen((char *) newbuf);
+    newbuf[len] = '\n';
+    *bufsz = len + 1;
     *buffer = newbuf;
 
     return false;
@@ -156,6 +159,15 @@ bool replace_with_b64_decoded(uint8_t ** buffer, size_t * bufsz)
     uint8_t * newbuf = malloc(new_sz);
     if (!newbuf) {
         return true;
+    }
+
+    // Trim any whitespace from the right
+    for (size_t i = *bufsz - 1; i > 0; --i) {
+        if (isspace((char) (*buffer)[i])) {
+            (*buffer)[i] = 0;
+        } else {
+            break;
+        }
     }
 
     int n = base64_decode(newbuf, (char const *) *buffer, new_sz);
