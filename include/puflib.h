@@ -45,7 +45,7 @@ typedef struct module_info_s {
   char * desc;          ///< Longer (but still brief) description of the module
   bool (*is_hw_supported)();                ///< Return true if the platform present is supported
   enum provisioning_status (*provision)();  ///< Provision the module on this hardware
-  int8_t * (*chal_resp)();                  ///< TODO
+
   /**
    * Seal (encrypt) the provided data.
    * @param data_in - data to be sealed
@@ -56,7 +56,10 @@ typedef struct module_info_s {
    *    in bytes.
    * @return false on success, true on error
    */
-  bool (*seal  )(uint8_t const * data_in, size_t data_in_len, uint8_t ** data_out, size_t * data_out_len);
+  bool (*seal  )(
+          uint8_t const * data_in,  size_t   data_in_len,
+          uint8_t **      data_out, size_t * data_out_len );
+
   /**
    * Unseal (decrypt) the provided data.
    * @param data_in - data to be unsealed
@@ -67,7 +70,30 @@ typedef struct module_info_s {
    *    in bytes.
    * @return false on success, true on error
    */
-  bool (*unseal)(uint8_t const * data_in, size_t data_in_len, uint8_t ** data_out, size_t * data_out_len);
+  bool (*unseal)(
+          uint8_t const * data_in,  size_t   data_in_len,
+          uint8_t **      data_out, size_t * data_out_len );
+
+  /**
+   * Low-level challenge/response call. Should return each module's rough
+   * equivalent of puf(hash(i)).
+   *
+   * Note that the input handling will vary between modules. While the generic
+   * chal_resp() function must accept arbitrary data, the module may impose its
+   * own restrictions and reject data that does not fit. Many modules will take
+   * a simple integer.
+   *
+   * @param data_in - challenge input data
+   * @param data_in_len - challenge input length in bytes
+   * @param data_out - outparam for the response. Will be allocated by
+   *    chal_resp(); cvaller is responsible for freeing.
+   * @param data_out_len - outparam for the length fo the data, in bytes.
+   * @return false on success, true on error
+   */
+  bool (*chal_resp)(
+          void const * data_in,  size_t   data_in_len,
+          void **      data_out, size_t * data_out_len );
+
 } module_info;
 
 /**
