@@ -37,6 +37,7 @@ static void usage(void)
     printf("commands:\n");
     printf("  seal MOD IN       Seal IN using MOD\n");
     printf("  unseal MOD IN     Unseal IN using MOD\n");
+    printf("  chal MOD IN       Use MOD's raw challenge-response interface\n");
 }
 
 
@@ -171,7 +172,7 @@ bool replace_with_b64_decoded(uint8_t ** buffer, size_t * bufsz)
 }
 
 
-int do_seal_unseal(struct opts opts)
+int do_action(struct opts opts)
 {
     int argc = opts.argc;
     char ** argv = opts.argv;
@@ -237,6 +238,9 @@ int do_seal_unseal(struct opts opts)
         rc = puflib_seal(mod, in_buf, in_buf_len, &out_buf, &out_buf_len);
     } else if (!strcmp(argv[0], "unseal")) {
         rc = puflib_unseal(mod, in_buf, in_buf_len, &out_buf, &out_buf_len);
+    } else if (!strcmp(argv[0], "chal")) {
+        rc = puflib_chal_resp(mod, (void const *) in_buf, in_buf_len,
+                (void **) &out_buf, &out_buf_len);
     } else {
         assert(false && "expected 'seal' or 'unseal'");
         goto err;
@@ -357,10 +361,10 @@ int main(int argc, char ** argv)
     if (opts.argc == 0) {
         fprintf(stderr, "puf: expected a command. Try --help\n");
         return 1;
-    } else if (!strcmp(opts.argv[0], "seal") || !strcmp(opts.argv[0], "unseal")) {
-        return do_seal_unseal(opts);
-    } else if (!strcmp(opts.argv[0], "unseal")) {
-        return do_seal_unseal(opts);
+    } else if (!strcmp(opts.argv[0], "seal") ||
+               !strcmp(opts.argv[0], "unseal") ||
+               !strcmp(opts.argv[0], "chal")) {
+        return do_action(opts);
     } else {
         fprintf(stderr, "pufctl: unrecognized command '%s'\n", opts.argv[0]);
         return 1;

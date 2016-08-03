@@ -39,6 +39,12 @@ Seal the file \fIINPUT\fR using \fIMODULE\fR, with encrypted data to stdout or a
 .BR unseal " " \fIMODULE\fR " " \fIINPUT\fR
 Unseal the file \fIINPUT\fR using \fIMODULE\fR, with decrypted data to stdout or a specified output file.
 \fIINPUT\fR may be \- to use standard input.
+.TP
+.BR chal " " \fIMODULE\fR " " \fIINPUT\fR
+Pass \fIINPUT\fR to \fIMODULE\fR's raw challenge-response interface; send output to stdout or a specified output file.
+Note that each module implements this interface differently, and the requirements for data may vary.
+Many modules expect one or a sequence of 32-bit integers, delievered in binary, and return the same.
+The response from this is generally a module-specific implementation of "puf(hash(input))".
 
 .SH "SEE ALSO"
 .BR pufctl (1)

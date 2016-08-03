@@ -104,6 +104,18 @@ bool puflib_unseal(module_info const * module,
 }
 
 
+bool puflib_chal_resp(module_info const * module,
+        void const * data_in, size_t data_in_len,
+        void ** data_out, size_t * data_out_len)
+{
+    if (module) {
+        return module->chal_resp(data_in, data_in_len, data_out, data_out_len);
+    } else {
+        return true;
+    }
+}
+
+
 bool puflib_deprovision(module_info const * module)
 {
     static const struct {

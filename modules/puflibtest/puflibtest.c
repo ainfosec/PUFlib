@@ -11,9 +11,9 @@
 
 bool is_hw_supported();
 enum provisioning_status provision();
-int8_t * chal_resp();
 bool seal(uint8_t const * data_in, size_t data_in_len, uint8_t ** data_out, size_t * data_out_len);
 bool unseal(uint8_t const * data_in, size_t data_in_len, uint8_t ** data_out, size_t * data_out_len);
+bool chal_resp(void const * data_in, size_t data_in_len, void ** data_out, size_t * data_out_len);
 
 module_info const MODULE_INFO =
 {
@@ -34,9 +34,19 @@ bool is_hw_supported()
 }
 
 
-int8_t* chal_resp()
+bool chal_resp(void const * data_in, size_t data_in_len, void ** data_out, size_t * data_out_len)
 {
-    return NULL;
+    void * buf = malloc(data_in_len);
+
+    if (!buf) {
+        puflib_perror(&MODULE_INFO);
+        return true;
+    }
+
+    memcpy(buf, data_in, data_in_len);
+    *data_out = buf;
+    *data_out_len = data_in_len;
+    return false;
 }
 
 

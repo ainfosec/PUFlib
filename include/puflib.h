@@ -86,8 +86,8 @@ typedef struct module_info_s {
    * @param data_in - challenge input data
    * @param data_in_len - challenge input length in bytes
    * @param data_out - outparam for the response. Will be allocated by
-   *    chal_resp(); cvaller is responsible for freeing.
-   * @param data_out_len - outparam for the length fo the data, in bytes.
+   *    chal_resp(); caller is responsible for freeing.
+   * @param data_out_len - outparam for the length of the data, in bytes.
    * @return false on success, true on error
    */
   bool (*chal_resp)(
@@ -203,6 +203,27 @@ bool puflib_seal(module_info const * module,
 bool puflib_unseal(module_info const * module,
         uint8_t const * data_in, size_t data_in_len,
         uint8_t ** data_out, size_t * data_out_len);
+
+/**
+ * Perform a low-level challenge-response call. Should return each module's
+ * rough equivalent of puf(hash(i)).
+ *
+ * Note that the input handling will vary between modules. While the generic
+ * puflib_chal_resp() function accepts arbitrary data, the module may impose
+ * its own restrictions and reject data that does not fit. Many modules will
+ * take a simple integer.
+ *
+ * @param module - module to use
+ * @param data_in - challenge input data
+ * @param data_in_len - challenge input length in bytes
+ * @param data_out - outparam for the response. Will be allocated by
+ *  puflib_chal_resp(); caller is reponsible for freeing.
+ * @param data_out_len - outparam for the length of the data, in bytes.
+ * @return false on success, true on error.
+ */
+bool puflib_chal_resp(module_info const * module,
+        void const * data_in, size_t data_in_len,
+        void ** data_out, size_t * data_out_len);
 
 /**
  * Deprovision the module. No-op if the module is not provisioned. If the

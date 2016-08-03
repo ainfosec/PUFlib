@@ -16,7 +16,7 @@ SO_MAJ = 1
 SO_MIN = 0.1
 SOFILE = ${SONAME}.${SO_MAJ}.${SO_MIN}
 
-CFLAGS = -I${CURDIR}/include -g -Og -Wall -Wextra -fPIC -std=c99
+CFLAGS = -I${CURDIR}/include -g -Og -Wall -Wextra -Werror -fPIC -std=c99
 LDFLAGS = -shared -Wl,-soname,${SONAME}.${SO_MAJ}
 
 MODULES := puflibtest
