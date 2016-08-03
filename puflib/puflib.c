@@ -329,9 +329,10 @@ void puflib_report(module_info const * module, enum puflib_status_level level,
     char *formatted = NULL;
     if (puflib_asprintf(&formatted, "%s (%s): %s", level_as_string, module->name, message) < 0) {
         if (formatted) free(formatted);
-        STATUS_CALLBACK("error (puflib): internal error formatting message");
+        STATUS_CALLBACK(NULL, STATUS_ERROR,
+                "error (puflib): internal error formatting message");
     } else {
-        STATUS_CALLBACK(formatted);
+        STATUS_CALLBACK(module, level, formatted);
         free(formatted);
     }
 }
@@ -346,7 +347,8 @@ void puflib_report_fmt(module_info const * module, enum puflib_status_level leve
     char *formatted = NULL;
     if (puflib_vasprintf(&formatted, fmt, ap) < 0) {
         if (formatted) free(formatted);
-        STATUS_CALLBACK("error (puflib): internal error formatting message");
+        STATUS_CALLBACK(NULL, STATUS_ERROR,
+                "error (puflib): internal error formatting message");
     } else {
         puflib_report(module, level, formatted);
         free(formatted);

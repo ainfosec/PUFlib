@@ -65,8 +65,11 @@ static int do_list(bool include_all)
 }
 
 
-static void status_handler(char const * message)
+static void status_handler(module_info const * module,
+        enum puflib_status_level level, char const * message)
 {
+    (void) module;
+    (void) level;
     printf("%s\n", message);
 }
 

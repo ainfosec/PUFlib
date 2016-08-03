@@ -24,6 +24,15 @@ enum module_status {
 };
 
 /**
+ * Severity levels for status messages.
+ */
+enum puflib_status_level {
+    STATUS_INFO,    ///< Simple informative/progress messages for the user
+    STATUS_WARN,    ///< Messages indicating something may be wrong
+    STATUS_ERROR,   ///< Messages indicating failure
+};
+
+/**
  * Structure containing the information and functions belonging to a puflib
  * module. Every module must provide this.
  */
@@ -71,6 +80,14 @@ enum provisioning_status {
 
 /**
  * Callback to handle info and error messages from modules.
+ * Generally, parameters module and level may be ignored; the message is
+ * passed to the callback totally formatted and ready to be displayed.
+ * These parameters may be used by a handler that wants to do something more
+ * advanced (e.g. colorized output).
+ *
+ * @param module - the calling module. This may be NULL for messages coming from
+ *  puflib internals!
+ * @param level - status level
  * @param message - the fully formatted string message
  */
 typedef void (*puflib_status_handler_p)(module_info const * module,

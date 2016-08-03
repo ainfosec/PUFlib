@@ -80,15 +80,6 @@ bool puflib_delete_nv_store(module_info const * module, enum puflib_storage_type
 /// @}
 
 /**
- * Severity levels for status messages.
- */
-enum puflib_status_level {
-    STATUS_INFO,
-    STATUS_WARN,
-    STATUS_ERROR,
-};
-
-/**
  * Report a status message. The message should be unformatted and raw, like
  * "hardware caught fire"; formatting like "error (eeprom): hardware caught fire"
  * will be added later.
