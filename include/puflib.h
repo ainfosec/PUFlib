@@ -27,6 +27,9 @@ enum module_status {
  * Severity levels for status messages.
  */
 enum puflib_status_level {
+    STATUS_DEBUG,   ///< Messages that only need to be seen while debugging.
+                    ///< Will be silently dropped when compiling with NDEBUG
+                    ///< defined.
     STATUS_INFO,    ///< Simple informative/progress messages for the user
     STATUS_WARN,    ///< Messages indicating something may be wrong
     STATUS_ERROR,   ///< Messages indicating failure

@@ -314,6 +314,9 @@ void puflib_report(module_info const * module, enum puflib_status_level level,
 {
     char const * level_as_string;
     switch (level) {
+    case STATUS_DEBUG:
+        level_as_string = "debug";
+        break;
     case STATUS_INFO:
         level_as_string = "info";
         break;
@@ -325,6 +328,12 @@ void puflib_report(module_info const * module, enum puflib_status_level level,
         level_as_string = "error";
         break;
     }
+
+#ifdef NDEBUG
+    if (level == STATUS_DEBUG) {
+        return;
+    }
+#endif
 
     char *formatted = NULL;
     if (puflib_asprintf(&formatted, "%s (%s): %s", level_as_string, module->name, message) < 0) {
