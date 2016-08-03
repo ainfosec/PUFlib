@@ -72,6 +72,7 @@ char * puflib_get_nv_store(module_info const * module, enum puflib_storage_type 
  * be true and an error code will be present in errno.
  *
  * @param module - the calling module, for tracking ownership
+ * @param type - type of storage requested
  * @return false on success, true on error
  */
 bool puflib_delete_nv_store(module_info const * module, enum puflib_storage_type type);
@@ -107,12 +108,15 @@ void puflib_report(module_info const * module, enum puflib_status_level level,
  *
  * @param module - the calling module
  * @param level - the status level
- * @param message - printf format string
+ * @param fmt - printf format string
  * @param ... - printf arguments
  */
 void puflib_report_fmt(module_info const * module, enum puflib_status_level level,
         char const * fmt, ...)
-    __attribute__((format (printf, 3, 4)));
+#ifndef DOXYGEN
+    __attribute__((format (printf, 3, 4)))
+#endif
+    ;
 
 /**
  * Print an error message through the report mechanism.

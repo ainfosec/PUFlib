@@ -13,36 +13,82 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-enum provisioning_status {
-    PROVISION_NOT_SUPPORTED,
-    PROVISION_INCOMPLETE,
-    PROVISION_COMPLETE,
-    PROVISION_ERROR,
-};
-
 /**
  * Module status flags - bitwise OR'd
  */
 enum module_status {
-    MODULE_DISABLED = 0x01,
-    MODULE_PROVISIONED = 0x02,
-    MODULE_IN_PROGRESS = 0x04,
-    MODULE_STATUS_ERROR = 0x8000,
+    MODULE_DISABLED = 0x01,         ///< Module has been provisioned, but is not available for use
+    MODULE_PROVISIONED = 0x02,      ///< Module has been provisioned and is ready
+    MODULE_IN_PROGRESS = 0x04,      ///< Module provisioning has started, but not finished
+    MODULE_STATUS_ERROR = 0x8000,   ///< There was an error retrieving module status
 };
 
-struct module_info_s {
-  char * name;
-  char * author;
-  char * desc;
-  bool (*is_hw_supported)();
-  enum provisioning_status (*provision)();
-  int8_t * (*chal_resp)();
+/**
+ * Structure containing the information and functions belonging to a puflib
+ * module. Every module must provide this.
+ */
+typedef struct module_info_s {
+  char * name;          ///< Short name of the module, used to identify it
+  char * author;        ///< Author string. May contain authors, email addresses, etc.
+  char * desc;          ///< Longer (but still brief) description of the module
+  bool (*is_hw_supported)();                ///< Return true if the platform present is supported
+  enum provisioning_status (*provision)();  ///< Provision the module on this hardware
+  int8_t * (*chal_resp)();                  ///< TODO
+  /**
+   * Seal (encrypt) the provided data.
+   * @param data_in - data to be sealed
+   * @param data_in_len - length of the data to be sealed, in bytes
+   * @param data_out - outparam for the encrypted data. Will be allocated by
+   *    seal(); caller is reponsible for freeing.
+   * @param data_out_len - outparam for the length of the encrypted data,
+   *    in bytes.
+   * @return false on success, true on error
+   */
   bool (*seal  )(uint8_t const * data_in, size_t data_in_len, uint8_t ** data_out, size_t * data_out_len);
+  /**
+   * Unseal (decrypt) the provided data.
+   * @param data_in - data to be unsealed
+   * @param data_in_len - length of the data to be unsealed, in bytes
+   * @param data_out - outparam for the decrypted data. Will be allocated by
+   *    unseal(); caller is reponsible for freeing.
+   * @param data_out_len - outparam for the length of the decrypted data,
+   *    in bytes.
+   * @return false on success, true on error
+   */
   bool (*unseal)(uint8_t const * data_in, size_t data_in_len, uint8_t ** data_out, size_t * data_out_len);
-};
-typedef struct module_info_s module_info;
+} module_info;
 
-typedef void (*puflib_status_handler_p)(char const * message);
+/**
+ * Status returned by each module's provision().
+ */
+enum provisioning_status {
+    PROVISION_NOT_SUPPORTED,    ///< The platform present is not supported by this module
+    PROVISION_INCOMPLETE,       ///< Some provisioning was performed, but needs to be continued
+    PROVISION_COMPLETE,         ///< Provisioning is complete
+    PROVISION_ERROR,            ///< An error occurred
+};
+
+
+/**
+ * Callback to handle info and error messages from modules.
+ * @param message - the fully formatted string message
+ */
+typedef void (*puflib_status_handler_p)(module_info const * module,
+        enum puflib_status_level level, char const * message);
+
+/**
+ * Callback to handle queries from modules.
+ * @param module - the calling module
+ * @param key - a unique key identifying the data being requested
+ * @param prompt - a human-readable prompt
+ * @param buffer - a buffer to receive the data
+ * @param bufsz - the length of the buffer
+ * @return false on success, true on error (including user cancel)
+ *
+ * The unique key is provided to allow data to be provided by non-interactive
+ * means, by using a callback that looks up data by key and returns it
+ * directly.
+ */
 typedef bool (*puflib_query_handler_p)(
         module_info const * module,
         char const * key,
@@ -113,7 +159,8 @@ bool puflib_unseal(module_info const * module,
         uint8_t ** data_out, size_t * data_out_len);
 
 /**
- * Deprovision the module. No-op if the module is not provisioned.
+ * Deprovision the module. No-op if the module is not provisioned. If the
+ * module is partially provisioned, it will be reset to non-provisioned.
  * @param module - module to deprovision
  * @return true on error
  */
@@ -139,7 +186,7 @@ bool puflib_disable(module_info const * module);
  * Set a callback function to receive status messages. This defaults to NULL,
  * so any messages generated before this is called will be dropped!
  *
- * @param - callback, or NULL to ignore messages.
+ * @param callback - callback, or NULL to ignore messages.
  */
 void puflib_set_status_handler(puflib_status_handler_p callback);
 
@@ -149,19 +196,7 @@ void puflib_set_status_handler(puflib_status_handler_p callback);
  * using a default value; modules are not required to allow this, however, so
  * configuring it prior to provisioning is recommended.
  *
- * Callback function parameters:
- *  - module - the calling module
- *  - key - a unique key identifying the data being requested
- *  - prompt - a human-readable prompt
- *  - buffer - a buffer to receive the data
- *  - bufsz - the length of the buffer
- *  - (return) - false on success, true on error (including user cancel)
- *
- * The unique key is provided to allow data to be provided by non-interactive
- * means, by using a callback that looks up data by key and returns it
- * directly.
- *
- * @param - callback, or NULL to clear (but see warning above)
+ * @param callback - callback, or NULL to clear (but see warning above)
  */
 void puflib_set_query_handler(puflib_query_handler_p callback);
 
