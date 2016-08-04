@@ -14,6 +14,11 @@
 #include <stdlib.h>
 
 /**
+ * Magic header prepended to all sealed blobs
+ */
+#define PUFLIB_HEADER "puflib-sealed\n"
+
+/**
  * Module status flags - bitwise OR'd
  */
 enum module_status {
@@ -190,7 +195,6 @@ bool puflib_seal(module_info const * module,
  * output data will be passed as a newly allocated block through data_out and
  * data_out_len. Caller is responsible for freeing data_out.
  *
- * @param module - module to use
  * @param data_in - data to be unsealed
  * @param data_in_len - length of data_in, in bytes
  * @param data_out - pointer to a (uint8_t *) to receive the data.
@@ -200,7 +204,7 @@ bool puflib_seal(module_info const * module,
  *
  * @return true on error, including if the data cannot be decrypted.
  */
-bool puflib_unseal(module_info const * module,
+bool puflib_unseal(
         uint8_t const * data_in, size_t data_in_len,
         uint8_t ** data_out, size_t * data_out_len);
 

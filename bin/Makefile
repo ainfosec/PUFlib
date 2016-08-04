@@ -8,7 +8,7 @@ SHELL:=/bin/bash
 # Variables used by the Makefile
 CC = $(shell command -v colorgcc 2>&1 || echo gcc)
 
-CFLAGS = -I${CURDIR}/../include -g -Og -Wall -Wextra -std=c99
+CFLAGS = -I${CURDIR}/../include -g -Og -Wall -Wextra -Werror -std=c99
 LDFLAGS = -L.. -lpuf -lreadline
 
 SOURCES = $(wildcard *.c)

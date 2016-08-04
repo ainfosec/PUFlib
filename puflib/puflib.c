@@ -11,6 +11,7 @@
 #include <string.h>
 #include <errno.h>
 #include <assert.h>
+#include <stddef.h>
 
 extern module_info const * const PUFLIB_MODULES[];
 static puflib_status_handler_p volatile STATUS_CALLBACK = NULL;
@@ -84,23 +85,109 @@ bool puflib_seal(module_info const * module,
         uint8_t const * data_in, size_t data_in_len,
         uint8_t ** data_out, size_t * data_out_len)
 {
-    if (module) {
-        return module->seal(data_in, data_in_len, data_out, data_out_len);
-    } else {
+    char * header = NULL;
+    uint8_t * rawbuffer = NULL;
+    uint8_t * header_buffer = NULL;
+    size_t rawbuflen;
+
+    if (!module) {
         return true;
     }
+
+    header = puflib_concat(PUFLIB_HEADER, module->name, "\n", NULL);
+    if (!header) {
+        goto err;
+    }
+
+    if (module->seal(data_in, data_in_len, &rawbuffer, &rawbuflen)) {
+        goto err;
+    }
+
+    size_t header_len = strlen(header);
+    size_t header_buflen = rawbuflen + header_len;
+
+    header_buffer = malloc(header_buflen);
+    if (!header_buffer) {
+        goto err;
+    }
+
+    memcpy(header_buffer, header, header_len);
+    memcpy(header_buffer + header_len, rawbuffer, rawbuflen);
+    free(header);
+    free(rawbuffer);
+
+    *data_out = header_buffer;
+    *data_out_len = header_buflen;
+
+    return false;
+err:
+    free(header);
+    free(rawbuffer);
+    free(header_buffer);
+    return true;
 }
 
 
-bool puflib_unseal(module_info const * module,
+bool puflib_unseal(
         uint8_t const * data_in, size_t data_in_len,
         uint8_t ** data_out, size_t * data_out_len)
 {
-    if (module) {
-        return module->unseal(data_in, data_in_len, data_out, data_out_len);
-    } else {
-        return true;
+    char * module_name = NULL;
+
+    if (data_in_len < strlen(PUFLIB_HEADER)) {
+        puflib_report(NULL, STATUS_ERROR,
+                "malformed header: too short for puflib magic prefix");
+        goto err;
     }
+
+    if (memcmp(data_in, PUFLIB_HEADER, strlen(PUFLIB_HEADER))) {
+        puflib_report(NULL, STATUS_ERROR,
+                "malformed header: no puflib magic prefix");
+        goto err;
+    }
+
+    ptrdiff_t datalen_without_magic = data_in_len - strlen(PUFLIB_HEADER);
+    if (datalen_without_magic <= 0) {
+        puflib_report(NULL, STATUS_ERROR,
+                "malformed header: too short for module name");
+        goto err;
+    }
+
+    void const * module_name_start = (data_in + strlen(PUFLIB_HEADER));
+    void const * module_name_end =
+        memchr(module_name_start, '\n', datalen_without_magic);
+
+    if (!module_name_end) {
+        puflib_report(NULL, STATUS_ERROR, "malformed header: no module name");
+        goto err;
+    }
+
+    module_name = malloc(module_name_end - module_name_start + 1);
+    if (!module_name) {
+        goto err;
+    }
+
+    memcpy(module_name, module_name_start, module_name_end - module_name_start);
+    module_name[module_name_end - module_name_start] = 0;
+
+    module_info const * module = puflib_get_module(module_name);
+    if (!module) {
+        puflib_report_fmt(NULL, STATUS_ERROR,
+                "cannot unseal blob; requested module not found: %s\n",
+                module_name);
+        goto err;
+    }
+
+    size_t header_len = strlen(PUFLIB_HEADER) + strlen(module_name);
+    uint8_t const * data_raw = data_in + header_len + 1;
+    size_t data_raw_len = data_in_len - header_len - 1;
+    free(module_name);
+
+    return module->unseal(data_raw, data_raw_len, data_out, data_out_len);
+
+err:
+    free(module_name);
+    return true;
 }
 
 
@@ -348,7 +435,9 @@ void puflib_report(module_info const * module, enum puflib_status_level level,
 #endif
 
     char *formatted = NULL;
-    if (puflib_asprintf(&formatted, "%s (%s): %s", level_as_string, module->name, message) < 0) {
+    char const * name = module ? module->name : "puflib";
+
+    if (puflib_asprintf(&formatted, "%s (%s): %s", level_as_string, name, message) < 0) {
         if (formatted) free(formatted);
         STATUS_CALLBACK(NULL, STATUS_ERROR,
                 "error (puflib): internal error formatting message");

@@ -37,7 +37,7 @@ static void usage(void)
     printf("\n");
     printf("commands:\n");
     printf("  seal MOD IN       Seal IN using MOD\n");
-    printf("  unseal MOD IN     Unseal IN using MOD\n");
+    printf("  unseal IN         Unseal IN\n");
     printf("  chal MOD IN       Use MOD's raw challenge-response interface\n");
 }
 
@@ -184,18 +184,106 @@ bool replace_with_b64_decoded(uint8_t ** buffer, size_t * bufsz)
 }
 
 
+static uint8_t * get_input_data(char const * fn, size_t * len, bool b64)
+{
+    FILE * f_in = NULL;
+    uint8_t * in_buf = NULL;
+    size_t in_buf_len = 0;
+
+    if (!strcmp(fn, "-")) {
+        f_in = stdin;
+    } else {
+        f_in = fopen(fn, "r");
+        if (!f_in) {
+            goto err;
+        }
+    }
+
+    in_buf = read_input_buffer(f_in, &in_buf_len);
+    if (!in_buf) {
+        goto err;
+    }
+
+    if (b64) {
+        if (replace_with_b64_decoded(&in_buf, &in_buf_len)) {
+            fprintf(stderr, "puf: error decoding base64 data\n");
+            goto err;
+        }
+    }
+
+    *len = in_buf_len;
+    fclose(f_in);
+    return in_buf;
+err:
+    {
+        int errno_hold = errno;
+        free(in_buf);
+        if (f_in) {
+            fclose(f_in);
+        }
+        errno = errno_hold;
+        return NULL;
+    }
+}
+
+
+static int write_output_data(char const * fn, uint8_t ** data, size_t * len, bool b64)
+{
+    FILE * f_out = NULL;
+
+    if (fn) {
+        f_out = fopen(fn, "w");
+        if (!f_out) {
+            goto err;
+        }
+    } else {
+        f_out = stdout;
+    }
+
+    if (b64) {
+        if (replace_with_b64_encoded(data, len)) {
+            fprintf(stderr, "puf: error encoding base64 data\n");
+            goto err;
+        }
+    }
+
+    size_t write_i = 0;
+    while (!feof(f_out) && (*len - write_i)) {
+        if (ferror(f_out)) {
+            goto err;
+        }
+
+        size_t n = fwrite(*data + write_i, 1, *len - write_i, f_out);
+        write_i += n;
+        if (!n) {
+            break;
+        }
+    }
+
+    fclose(f_out);
+    return 0;
+err:
+    {
+        int errno_hold = errno;
+        if (f_out) {
+            fclose(f_out);
+        }
+        errno = errno_hold;
+        return 1;
+    }
+}
+
+
 int do_action(struct opts opts)
 {
     int argc = opts.argc;
     char ** argv = opts.argv;
 
     if (argc != 3) {
-        fprintf(stderr, "pufctl: expected two arguments to command \"%s\". Try --help\n", argv[0]);
+        fprintf(stderr, "puf: expected two arguments to command \"%s\". Try --help\n", argv[0]);
         return 1;
     }
 
-    FILE * f_in  = NULL;
-    FILE * f_out = NULL;
     size_t in_buf_len = 0;
     size_t out_buf_len = 0;
     uint8_t * in_buf = NULL;
@@ -222,34 +310,12 @@ int do_action(struct opts opts)
         goto err;
     }
 
-    // Read data
-    if (!strcmp(argv[2], "-")) {
-        f_in = stdin;
-    } else {
-        f_in = fopen(argv[2], "r");
-        if (!f_in) {
-            goto perr;
-        }
-    }
-
-    in_buf = read_input_buffer(f_in, &in_buf_len);
-    if (!in_buf) {
-        goto perr;
-    }
-
-    if (opts.input_base64) {
-        if (replace_with_b64_decoded(&in_buf, &in_buf_len)) {
-            fprintf(stderr, "puf: error decoding base64 data\n");
-            goto err;
-        }
-    }
+    in_buf = get_input_data(argv[2], &in_buf_len, opts.input_base64);
 
     // Seal or unseal
     bool rc = false;
     if (!strcmp(argv[0], "seal")) {
         rc = puflib_seal(mod, in_buf, in_buf_len, &out_buf, &out_buf_len);
-    } else if (!strcmp(argv[0], "unseal")) {
-        rc = puflib_unseal(mod, in_buf, in_buf_len, &out_buf, &out_buf_len);
     } else if (!strcmp(argv[0], "chal")) {
         rc = puflib_chal_resp(mod, (void const *) in_buf, in_buf_len,
                 (void **) &out_buf, &out_buf_len);
@@ -264,38 +330,10 @@ int do_action(struct opts opts)
         assert(out_buf);
     }
 
-    // Write data
-    if (opts.output) {
-        f_out = fopen(opts.output, "w");
-        if (!f_out) {
-            goto perr;
-        }
-    } else {
-        f_out = stdout;
+    if (write_output_data(opts.output, &out_buf, &out_buf_len, opts.output_base64)) {
+        goto perr;
     }
 
-    if (opts.output_base64) {
-        if (replace_with_b64_encoded(&out_buf, &out_buf_len)) {
-            fprintf(stderr, "puf: error encoding base64 data\n");
-            goto err;
-        }
-    }
-
-    size_t write_i = 0;
-    while (!feof(f_out) && (out_buf_len - write_i)) {
-        if (ferror(f_out)) {
-            goto err;
-        }
-
-        size_t n = fwrite(out_buf + write_i, 1, out_buf_len - write_i, f_out);
-        write_i += n;
-        if (!n) {
-            break;
-        }
-    }
-
-    fclose(f_in);
-    fclose(f_out);
     free(in_buf);
     free(out_buf);
 
@@ -304,18 +342,51 @@ int do_action(struct opts opts)
 perr:
     perror("puf");
 err:
-    if (f_in) {
-        fclose(f_in);
+    free(in_buf);
+    free(out_buf);
+    return 1;
+}
+
+
+int do_unseal(struct opts opts)
+{
+    int argc = opts.argc;
+    char ** argv = opts.argv;
+
+    if (argc != 2) {
+        fprintf(stderr, "puf: expected one argument to command \"unseal\". Try --help\n");
+        return 1;
     }
-    if (f_out) {
-        fclose(f_out);
+
+    size_t in_buf_len = 0;
+    size_t out_buf_len = 0;
+    uint8_t * in_buf = NULL;
+    uint8_t * out_buf = NULL;
+
+    // When unsealing, the module is specified by the blob header
+    // Let puflib figure out the module name
+
+    in_buf = get_input_data(argv[1], &in_buf_len, opts.input_base64);
+
+    if (puflib_unseal(in_buf, in_buf_len, &out_buf, &out_buf_len)) {
+        goto perr;
+    } else {
+        assert(out_buf);
     }
-    if (in_buf) {
-        free(in_buf);
+
+    if (write_output_data(opts.output, &out_buf, &out_buf_len, opts.output_base64)) {
+        goto perr;
     }
-    if (out_buf) {
-        free(out_buf);
-    }
+
+    free(in_buf);
+    free(out_buf);
+
+    return 0;
+perr:
+    perror("puf");
+//err:
+    free(in_buf);
+    free(out_buf);
     return 1;
 }
 
@@ -374,9 +445,10 @@ int main(int argc, char ** argv)
         fprintf(stderr, "puf: expected a command. Try --help\n");
         return 1;
     } else if (!strcmp(opts.argv[0], "seal") ||
-               !strcmp(opts.argv[0], "unseal") ||
                !strcmp(opts.argv[0], "chal")) {
         return do_action(opts);
+    } else if (!strcmp(opts.argv[0], "unseal")) {
+        return do_unseal(opts);
     } else {
         fprintf(stderr, "pufctl: unrecognized command '%s'\n", opts.argv[0]);
         return 1;
