@@ -12,7 +12,6 @@
 
 struct opts {
     bool help;
-    bool noninteractive;
     int argc;
     char ** argv;
 };
@@ -92,7 +91,7 @@ static bool query_handler(module_info const * module, char const * key,
 }
 
 
-static int do_provision(char const * modname, bool noninteractive)
+static int do_provision(char const * modname)
 {
     module_info const * module = puflib_get_module(modname);
 
@@ -126,7 +125,7 @@ static int do_provision(char const * modname, bool noninteractive)
 }
 
 
-static int do_continue(char const * modname, bool noninteractive)
+static int do_continue(char const * modname)
 {
     module_info const * module = puflib_get_module(modname);
 
@@ -247,9 +246,6 @@ int main(int argc, char ** argv)
         case 'h':
             opts.help = true;
             break;
-        case 'n':
-            opts.noninteractive = true;
-            break;
         case '?':
             fprintf(stderr, "%s: %s\n", argv[0], options.errmsg);
             return 1;
@@ -277,14 +273,14 @@ int main(int argc, char ** argv)
             fprintf(stderr, "pufctl: expected one argument to command \"provision\". Try --help\n");
             return 1;
         } else {
-            return do_provision(opts.argv[1], opts.noninteractive);
+            return do_provision(opts.argv[1]);
         }
     } else if (!strcmp(opts.argv[0], "continue")) {
         if (opts.argc != 2) {
             fprintf(stderr, "pufctl: expected one argument to command \"continue\". Try --help\n");
             return 1;
         } else {
-            return do_continue(opts.argv[1], opts.noninteractive);
+            return do_continue(opts.argv[1]);
         }
     } else if (!strcmp(opts.argv[0], "deprovision")) {
         if (opts.argc < 2) {
