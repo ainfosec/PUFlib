@@ -16,5 +16,8 @@ Design
 
 PUFlib is designed to be highly modular as PUFs are quite hardware-dependent. The core PUFlib aims
 to provide a consistent API for usage and multi-PUF source support.
-Each module must define a module_info structure as well as the following three functions: is_hw_supported(),
- provision() and chal_resp().
+
+Implementing modules
+--------------------
+
+See `IMPLEMENTING.md` under `docs/` for information on how to implement new puflib modules.
