@@ -83,6 +83,8 @@ typedef struct module_info_s {
    * Low-level challenge/response call. Should return each module's rough
    * equivalent of puf(hash(i)).
    *
+   * This is an optional function. Leave this pointer NULL if not implemented.
+   *
    * Note that the input handling will vary between modules. While the generic
    * chal_resp() function must accept arbitrary data, the module may impose its
    * own restrictions and reject data that does not fit. Many modules will take
@@ -216,6 +218,9 @@ bool puflib_unseal(
  * puflib_chal_resp() function accepts arbitrary data, the module may impose
  * its own restrictions and reject data that does not fit. Many modules will
  * take a simple integer.
+ *
+ * Not all modules implement chal_resp(); if the chosen module does not,
+ * this function will return true.
  *
  * @param module - module to use
  * @param data_in - challenge input data

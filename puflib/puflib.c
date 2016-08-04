@@ -195,7 +195,7 @@ bool puflib_chal_resp(module_info const * module,
         void const * data_in, size_t data_in_len,
         void ** data_out, size_t * data_out_len)
 {
-    if (module) {
+    if (module && module->chal_resp) {
         return module->chal_resp(data_in, data_in_len, data_out, data_out_len);
     } else {
         return true;
