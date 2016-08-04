@@ -19,7 +19,9 @@ First, create the following directory structure (where _modulename_ is the name 
 
     int8_t is_hw_supported();
     enum provisioning_status provision();
-    int8_t * chal_resp();
+    bool seal(uint8_t const * data_in, size_t data_in_len, uint8_t ** data_out, size_t * data_out_len);
+    bool unseal(uint8_t const * data_in, size_t data_in_len, uint8_t ** data_out, size_t * data_out_len);
+    bool chal_resp(void const * data_in, size_t data_in_len, void ** data_out, size_t * data_out_len);
 
     module_info const MODULE_INFO =
     {
@@ -28,7 +30,9 @@ First, create the following directory structure (where _modulename_ is the name 
         .desc = "Description",
         .is_hw_supported = &is_hw_supported,
         .provision = &provision,
-        .chal_resp = &chal_resp,
+        .seal = &seal,
+        .unseal = &unseal,
+        .chal_resp = &chal_resp,        // optional
     };
 
     // Test whether the running hardware is supported by this module.
@@ -38,18 +42,33 @@ First, create the following directory structure (where _modulename_ is the name 
         return 1;
     }
 
-    // Provision the PUF. See function documentation in puflib.h for more
+    // Provision the PUF. See function documentation in puflib_module.h for more
     // information; the bulk of the provisioning code will go here.
     enum provisioning_status provision()
     {
         return PROVISION_COMPLETE;
     }
 
-    // Raw challenge/response interface
-    // TODO: document this properly
-    int8_t * chal_resp()
+    // Seal data_in, placing a raw, sealed blob into data_out. puflib will then
+    // prepend a header identifying the source module before passing the data
+    // to the original caller.
+    bool seal()
     {
-        return NULL;
+        return true;
+    }
+
+    // Unseal a raw blob as produced by seal().
+    bool unseal()
+    {
+        return true;
+    }
+
+    // OPTIONAL: raw challenge/response interface. This is
+    // module/implementation-specific, and should write the module's closest
+    // equivalent to puf(hash(data_in)) to data_out.
+    bool chal_resp()
+    {
+        return true;
     }
 
 ## Makefile
