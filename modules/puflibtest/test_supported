@@ -1,4 +1,3 @@
 #!/bin/bash
 
-echo puflibtest: supported on all systems
 exit 0
