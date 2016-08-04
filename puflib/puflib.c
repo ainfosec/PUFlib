@@ -281,7 +281,9 @@ static bool puflib_en_dis(module_info const * module, bool enable)
         }
 
         if (acc_new) {
-            goto nop;
+            free(en_path);
+            free(dis_path);
+            continue;
         }
 
         if (acc_old) {
@@ -289,11 +291,6 @@ static bool puflib_en_dis(module_info const * module, bool enable)
                 goto err;
             }
         }
-
-nop:
-        free(en_path);
-        free(dis_path);
-        continue;
 
 err:
         if (en_path)  free(en_path);
