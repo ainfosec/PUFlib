@@ -31,12 +31,19 @@ char * puflib_duplicate_string(char const * src)
 #define PUFLIB_VASPRINTF_BUFLEN 200
 int puflib_vasprintf(char **strp, const char *fmt, va_list ap)
 {
-    char *buf = malloc(PUFLIB_VASPRINTF_BUFLEN);
+    char * buf = malloc(PUFLIB_VASPRINTF_BUFLEN);
+    if (!buf) {
+        goto err;
+    }
+
     int size = vsnprintf(buf, PUFLIB_VASPRINTF_BUFLEN, fmt, ap);
 
     if (size >= PUFLIB_VASPRINTF_BUFLEN) {
-        if (!realloc(&buf, size + 1)) {
+        char * newbuf = realloc(buf, (size_t) size + 1);
+        if (!newbuf) {
             goto err;
+        } else {
+            buf = newbuf;
         }
         int rtn = vsnprintf(buf, size + 1, fmt, ap);
         if (rtn >= 0) {
