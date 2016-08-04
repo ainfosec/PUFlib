@@ -33,7 +33,7 @@ endef
 # List all the objects needed here
 OBJECTS = puflib/puflib.o puflib/misc.o puflib/platform-posix.o module_list.o
 
-.PHONY: all clean pufctl puf ${MODULE_DIRS}
+.PHONY: all docs clean pufctl puf ${MODULE_DIRS}
 
 all: ${SOFILE} pufctl puf
 
@@ -42,6 +42,9 @@ pufctl:
 
 puf:
 	${MAKE} -C bin puf
+
+docs:
+	doxygen doxyfile
 
 # Include calculated dependencies
 -include ${OBJECTS:.o=.d}

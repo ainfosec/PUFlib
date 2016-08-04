@@ -17,6 +17,12 @@ Design
 PUFlib is designed to be highly modular as PUFs are quite hardware-dependent. The core PUFlib aims
 to provide a consistent API for usage and multi-PUF source support.
 
+Documentation
+-------------
+
+API functions are documented in the headers under `include/`. To compile this documentation
+into HTML for easy browsing, type `make docs` (requires Doxygen).
+
 Implementing modules
 --------------------
 
