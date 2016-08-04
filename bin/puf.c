@@ -212,13 +212,15 @@ static uint8_t * get_input_data(char const * fn, size_t * len, bool b64)
     }
 
     *len = in_buf_len;
-    fclose(f_in);
+    if (f_in != stdin) {
+        fclose(f_in);
+    }
     return in_buf;
 err:
     {
         int errno_hold = errno;
         free(in_buf);
-        if (f_in) {
+        if (f_in && f_in != stdin) {
             fclose(f_in);
         }
         errno = errno_hold;
@@ -260,12 +262,14 @@ static int write_output_data(char const * fn, uint8_t ** data, size_t * len, boo
         }
     }
 
-    fclose(f_out);
+    if (f_out != stdout) {
+        fclose(f_out);
+    }
     return 0;
 err:
     {
         int errno_hold = errno;
-        if (f_out) {
+        if (f_out && f_out != stdout) {
             fclose(f_out);
         }
         errno = errno_hold;
