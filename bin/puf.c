@@ -374,6 +374,9 @@ int do_unseal(struct opts opts)
     // Let puflib figure out the module name
 
     in_buf = get_input_data(argv[1], &in_buf_len, opts.input_base64);
+    if (!in_buf) {
+        goto perr;
+    }
 
     if (puflib_unseal(in_buf, in_buf_len, &out_buf, &out_buf_len)) {
         goto perr;
