@@ -347,7 +347,7 @@ int do_action(struct opts opts)
     return 0;
 
 perr:
-    perror("puf");
+    if (errno) perror("puf");
 err:
     free(in_buf);
     free(out_buf);
@@ -393,7 +393,7 @@ int do_unseal(struct opts opts)
 
     return 0;
 perr:
-    perror("puf");
+    if (errno) perror("puf");
 //err:
     free(in_buf);
     free(out_buf);
