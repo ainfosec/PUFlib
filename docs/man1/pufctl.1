@@ -1,0 +1,51 @@
+.TH PUFCTL 1
+.SH DRAFT
+
+.SH NAME
+pufctl \- manage and provision PUFlib PUFs
+
+.SH SYNOPSIS
+.B pufctl
+[OPTIONS]
+COMMAND
+[...]
+
+.SH DESCRIPTION
+.B pufctl
+may be used to manage and provision the PUF modules made available by PUFlib.
+
+.SH OPTIONS
+.TP
+.BR \-h ", " \-\-help
+Print a short help text and exit.
+
+.SH COMMANDS
+.TP
+.BR list
+List all PUF modules, including unprovisioned modules and modules that do not
+support the current hardware.
+.TP
+.BR provisioned
+List available, provisioned PUF modules.
+.TP
+.BR provision " " \fIMODULE\fR
+Provision \fIMODULE\fR. Note that this may be a multi-step interactive process,
+and will vary from module to module.
+.TP
+.BR continue " " \fIMODULE\fR
+Continue provisioning \fIMODULE\fR. This may be required if a module's
+provisioning process requires you to log out or reboot.
+.TP
+.BR deprovision " " \fIMODULE...\fR
+Deprovision modules, deleting their stored data. In order to use them again,
+they will have to be reprovisioned.
+.TP
+.BR disable " " \fIMODULE...\fR
+Temporarily disable modules from being used by puflib, without deprovisioning
+them.
+.TP
+.BR enable " " \fIMODULE...\fR
+Re-enable modules that were disabled previously.
+
+.SH "SEE ALSO"
+.BR puf (1)

@@ -1,0 +1,11 @@
+#!/bin/bash
+# Quick script for use during development - runs pufctl
+
+BIN=./bin/pufctl
+
+if [[ "x$1" == "x-g" ]]; then
+    shift
+    LD_LIBRARY_PATH=. gdb --quiet $BIN
+else
+    LD_LIBRARY_PATH=. $BIN "$@"
+fi

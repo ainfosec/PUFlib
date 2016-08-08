@@ -1,0 +1,14 @@
+#!/bin/bash
+# Quick script for use during development - runs puf
+
+BIN=./bin/puf
+
+if [[ "x$1" == "x-g" ]]; then
+    shift
+    LD_LIBRARY_PATH=. gdb --quiet $BIN
+elif [[ "x$1" == "x-v" ]]; then
+    shift
+    LD_LIBRARY_PATH=. valgrind --leak-check=full $BIN "$@"
+else
+    LD_LIBRARY_PATH=. $BIN "$@"
+fi

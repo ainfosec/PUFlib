@@ -1,0 +1,50 @@
+.TH PUF 1
+.SH DRAFT
+
+.SH NAME
+puf \- seal and unseal secrets using PUFlib PUFs
+
+.SH SYNOPSIS
+.B puf
+[OPTIONS]
+COMMAND
+[...]
+
+.SH DESCRIPTION
+.B puf
+may be used to seal and unseal secrets using the PUF modules made available by PUFlib.
+To find the modules that are available, see
+.BR pufctl (1).
+
+.SH OPTIONS
+.TP
+.BR \-h ", " \-\-help
+Print a short help text and exit.
+.TP
+.BR \-o " " \fIFILE\fR ", " \-\-output " " \fIFILE\fR
+Output is written to \fIFILE\fR. Otherwise, stdout.
+.TP
+.BR \-I ", " \-\-input\-base64
+Input data is encoded in base64. Otherwise, raw.
+.TP
+.BR \-O ", " \-\-output\-base64
+Output data is encoded in base64. Otherwise, raw.
+
+.SH COMMANDS
+.TP
+.BR seal " " \fIMODULE\fR " " \fIINPUT\fR
+Seal the file \fIINPUT\fR using \fIMODULE\fR, with encrypted data to stdout or a specified output file.
+\fIINPUT\fR may be \- to use standard input.
+.TP
+.BR unseal " " \fIINPUT\fR
+Unseal the file \fIINPUT\fR, with decrypted data to stdout or a specified output file.
+\fIINPUT\fR may be \- to use standard input.
+.TP
+.BR chal " " \fIMODULE\fR " " \fIINPUT\fR
+Pass \fIINPUT\fR to \fIMODULE\fR's raw challenge-response interface; send output to stdout or a specified output file.
+Note that each module implements this interface differently, and the requirements for data may vary.
+Many modules expect one or a sequence of 32-bit integers, delievered in binary, and return the same.
+The response from this is generally a module-specific implementation of "puf(hash(input))".
+
+.SH "SEE ALSO"
+.BR pufctl (1)
