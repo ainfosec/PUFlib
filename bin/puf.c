@@ -327,7 +327,7 @@ int do_action(struct opts opts)
         rc = puflib_chal_resp(mod, (void const *) in_buf, in_buf_len,
                 (void **) &out_buf, &out_buf_len);
     } else {
-        assert(false && "expected 'seal' or 'unseal'");
+        assert(false && "unexpected command name passed to do_action");
         goto err;
     }
 
