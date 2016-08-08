@@ -315,6 +315,9 @@ int do_action(struct opts opts)
     }
 
     in_buf = get_input_data(argv[2], &in_buf_len, opts.input_base64);
+    if (!in_buf) {
+        goto err;
+    }
 
     // Seal or unseal
     bool rc = false;
