@@ -1,7 +1,7 @@
 #!/bin/bash
 # Quick script for use during development - runs puf
 
-BIN=./bin/puf
+BIN=./tools/puf
 
 if [[ "x$1" == "x-g" ]]; then
     shift
