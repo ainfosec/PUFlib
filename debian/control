@@ -1,6 +1,6 @@
 Source: puflib
 Priority: optional
-Maintainer: Chris Pavlina <pavlinac@ainfosec.com>
+Maintainer: Jacob Torrey <torreyj@ainfosec.com>
 Build-Depends: debhelper (>= 9), doxygen
 Standards-Version: 3.9.5
 Section: libs
