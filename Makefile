@@ -42,10 +42,10 @@ OBJECTS = puflib/puflib.o puflib/misc.o puflib/platform-posix.o module_list.o
 all: ${SOFILE} pufctl puf
 
 pufctl:
-	${MAKE} -C bin pufctl
+	${MAKE} -C tools pufctl
 
 puf:
-	${MAKE} -C bin puf
+	${MAKE} -C tools puf
 
 docs:
 	doxygen doxyfile
@@ -57,8 +57,8 @@ install: ${SOFILE} pufctl puf
 	${INSTALL} -m 0644 ${SOFILE} ${DESTDIR}/${PREFIX}/lib/${SOFILE}
 	ln -fs ${SOFILE} ${DESTDIR}/${PREFIX}/lib/${SONAME}.${SO_MAJ}
 	ln -fs ${SONAME}.${SO_MAJ} ${DESTDIR}/${PREFIX}/lib/${SONAME}
-	${INSTALL} -m 0755 bin/puf ${DESTDIR}/${PREFIX}/bin/puf
-	${INSTALL} -m 0755 bin/pufctl ${DESTDIR}/${PREFIX}/bin/pufctl
+	${INSTALL} -m 0755 tools/puf ${DESTDIR}/${PREFIX}/bin/puf
+	${INSTALL} -m 0755 tools/pufctl ${DESTDIR}/${PREFIX}/bin/pufctl
 	${INSTALL} -m 0644 include/puflib.h ${DESTDIR}/${PREFIX}/include/puflib.h
 	${INSTALL} -m 0644 include/puflib_internal.h ${DESTDIR}/${PREFIX}/include/puflib_internal.h
 	${INSTALL} -m 0644 include/puflib_module.h ${DESTDIR}/${PREFIX}/include/puflib_module.h
@@ -95,7 +95,7 @@ module_list.c:
 distclean: clean
 	rm -f ${SONAME}.${SO_MAJ}.${SO_MIN} ${SONAME}.${SO_MAJ} ${SONAME}
 	rm -rf docs/html
-	make -C bin distclean
+	make -C tools distclean
 	for mod in ${MODULES}; do \
 		$(call module_mf,$${mod},distclean); \
 	done
@@ -107,4 +107,4 @@ clean:
 	for mod in ${MODULES}; do \
 		$(call module_mf,$${mod},clean); \
 	done
-	make -C bin clean
+	make -C tools clean
