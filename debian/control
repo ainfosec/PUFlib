@@ -1,0 +1,23 @@
+Source: puflib
+Priority: optional
+Maintainer: Jacob Torrey <torreyj@ainfosec.com>
+Build-Depends: debhelper (>= 9), doxygen
+Standards-Version: 3.9.5
+Section: libs
+Homepage:
+
+Package: libpuf-dev
+Section: libdevel
+Architecture: any
+Depends: puflib (= ${binary:Version}), ${misc:Depends}
+Description: AIS PUFlib: Header Files
+ Contains the headers needed to compile programs that use PUFlib (libpuf).
+
+Package: libpuf
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: AIS PUFlib shared library and user tools
+ PUFlib is a modular library for manipulating and using physically uncloneable
+ functions (PUFs). This package provides the shared library itself, as well as
+ the pufctl tool for managing PUF provisioning, and the puf tool for invoking
+ the PUF usage functions manually and from scripts.

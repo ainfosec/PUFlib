@@ -14,7 +14,7 @@ LDFLAGS = -L.. -lpuf -lreadline
 SOURCES = $(wildcard *.c)
 OBJECTS = ${SOURCES:.c=.o}
 
-.PHONY: all clean
+.PHONY: all clean distclean
 
 all: puf pufctl
 
@@ -35,4 +35,6 @@ pufctl: pufctl.o optparse.o
 clean:
 	rm -f ${OBJECTS}
 	rm -f ${OBJECTS:.o=.d}
+
+distclean: clean
 	rm -f pufctl puf

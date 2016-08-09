@@ -13,7 +13,7 @@ LDFLAGS = ${PUFLIB_LDFLAGS} ${MODLDFLAGS}
 
 OBJECTS ?= $(patsubst %.c,%.o,${SOURCES})
 
-.PHONY: all clean
+.PHONY: all clean distclean
 
 all:: ${MODNAME}.mod.o
 
@@ -28,3 +28,5 @@ clean::
 	rm -f ${OBJECTS}
 	rm -f ${OBJECTS:.o=.d}
 	rm -f ${MODNAME}.mod.o
+
+distclean:: clean
