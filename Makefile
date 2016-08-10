@@ -90,6 +90,7 @@ ${SOFILE}: ${OBJECTS} ${MODULE_DIRS}
 	ln -fs ${SONAME}.${SO_MAJ} ${SONAME}
 
 module_list.c:
+	bash ./scripts/get_submodules
 	bash ./scripts/gen_module_list ${MODULES_SUPPORTED} > $@
 
 distclean: clean

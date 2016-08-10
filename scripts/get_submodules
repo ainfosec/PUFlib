@@ -1,0 +1,20 @@
+#!/bin/bash
+##############################################################
+# Submodule downloader
+# Checks out submodules, if and only if they haven't been
+# checked out yet.
+#
+# Author: Chris Pavlina
+##############################################################
+
+set -e
+
+for modpath in $(grep 'path = ' .gitmodules | sed 's/.* = //'); do
+    if ! [[ -e "$modpath/.git" ]]; then
+
+        # This command downloads ALL, so only run it once
+        git submodule update --init --recursive
+        exit 0
+
+    fi
+done
