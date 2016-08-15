@@ -15,6 +15,10 @@ char * puflib_duplicate_string(char const * src)
     // avoids writing past the end of dest if src is modified by a thread while
     // this function is running.
 
+    if (!src) {
+        return NULL;
+    }
+
     size_t len = strlen(src);
     char * dest = malloc(len + 1);
 
@@ -31,11 +35,14 @@ char * puflib_duplicate_string(char const * src)
 #define PUFLIB_VASPRINTF_BUFLEN 200
 int puflib_vasprintf(char **strp, const char *fmt, va_list ap)
 {
+    va_list ap2;
+
     char * buf = malloc(PUFLIB_VASPRINTF_BUFLEN);
     if (!buf) {
         goto err;
     }
 
+    va_copy(ap2, ap);
     int size = vsnprintf(buf, PUFLIB_VASPRINTF_BUFLEN, fmt, ap);
 
     if (size >= PUFLIB_VASPRINTF_BUFLEN) {
@@ -45,7 +52,7 @@ int puflib_vasprintf(char **strp, const char *fmt, va_list ap)
         } else {
             buf = newbuf;
         }
-        int rtn = vsnprintf(buf, size + 1, fmt, ap);
+        int rtn = vsnprintf(buf, size + 1, fmt, ap2);
         if (rtn >= 0) {
             *strp = buf;
             return rtn;
@@ -53,9 +60,11 @@ int puflib_vasprintf(char **strp, const char *fmt, va_list ap)
             goto err;
         }
     } else if (size >= 0) {
+        va_end(ap2);
         *strp = buf;
         return size;
     } else {
+        va_end(ap2);
         goto err;
     }
 
