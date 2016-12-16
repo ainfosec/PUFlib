@@ -23,7 +23,7 @@ SOFILE = ${SONAME}.${SO_MAJ}.${SO_MIN}
 CFLAGS = -I${CURDIR}/include -g -Og -Wall -Wextra -Werror -fPIC -std=c99
 LDFLAGS = -shared -Wl,-soname,${SONAME}.${SO_MAJ}
 
-MODULES := puflibtest sxc
+MODULES := puflibtest # sxc
 MODULES_SUPPORTED := $(shell bash ./scripts/test_module_support ${MODULES})
 MODULE_DIRS = $(foreach mod,${MODULES_SUPPORTED},modules/${mod})
 MODULE_PACKAGES = $(foreach mod,${MODULES_SUPPORTED},modules/${mod}/${mod}.mod.o)
