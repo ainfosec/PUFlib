@@ -1,0 +1,76 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>PUFlib</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/github-light.css">
+    <meta name="viewport" content="width=device-width">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+
+      <header>
+        <h1><img src="images/PUFLib_logo.png" alt="PUFLib"></h1>
+        <p>Modular library for manipulating physically-uncloneable functions</p>
+
+        <p class="view"><a href="https://github.com/ainfosec/PUFlib">View the Project on GitHub <small>ainfosec/PUFlib</small></a></p>
+        <p class="view"><a href="https://github.com/ainfosec/PUFlib/issues">File a Bug or Feature Request<small>Bug Tracker</small></a></p>
+        <p class="view"><a href="http://ainfosec.github.io/PUFlib/feed.xml">Subscribe to RSS <small>Atom Format</small></a></p>
+
+        <ul>
+          <li><a href="https://github.com/ainfosec/PUFlib/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/ainfosec/PUFlib/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/ainfosec/PUFlib">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+
+      <section>
+        <h2><a id="overview" class="anchor" href="#overview" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Overview</h2>
+
+        <p>Physically unclonable functions (PUFs) return a unique response to a challenge, expose manufacturing variance intrinsic to IC fabrication, and currently require dedicated hardware and proprietary software.</p>
+
+        <p>The PUFLib project aims to further the state-of-the-art of PUF research, and provide a simple cross-platform API to utilize, manipulate, and form a trusted sealed storage mechanism based on these constructs.</p>
+
+        <p>Our goal with PUFLib is to develop an open-source platform for contributions: a modular library to use PUFs for data protection using Intel x86 and ARM, a variety of “legacy” and novel PUF plug-ins, and a modular design to facilitate contributions. We also plan to provide seal()/unseal() semantics for device-specific sealed storage.</p>
+
+        <p>Our approach allows us to incorporate sources such as:
+        <ul>
+          <li>SRAM</li>
+          <li>Flash</li>
+          <li>FPGA</li>
+          <li>SMBus EEPROM</li>
+        </ul>
+
+        <h3><a id="roadmap" class="anchor" href="#roadmap" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Roadmap</h3>
+
+        <p>End of 2016: Preliminary support for EEPROM on some memory modules</p>
+
+        <p>Middle of 2017: Preliminary support for DDR PUF source, and web cam evaluation for PUF characterization</p>
+
+        <p>End of 2017: Beta support for EEPROM, DDR, and CMOS sensor</p>
+
+        <h3><a id="compilation" class="anchor" href="#compilation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Compilation</h3>
+
+        <p>Documentation can be generated with <code>make docs</code> ; <code>make all</code> will build PUFLib for the system.</p>
+
+        <p>The PUFLib core includes automatic provisioning of hardware-supported PUF sources, error-correcting codes for temp/age variance, and Shamir’s secret sharing for multi-PUF support and additional error tolerance.</p>
+
+      </section>
+
+      <footer>
+        <p>This project is maintained by <a href="https://www.ainfosec.com/">Assured Information Security, Inc.</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+
+    </div>
+
+    <script src="javascripts/scale.fix.js"></script>
+
+  </body>
+</html>
