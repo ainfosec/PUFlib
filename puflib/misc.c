@@ -88,7 +88,7 @@ int puflib_asprintf(char **strp, const char *fmt, ...)
 
 char * puflib_concat(char const * first, ...)
 {
-    va_list ap;
+    va_list ap, ap2;
     size_t len;
     char const * each;
     char * head, * tail;
@@ -97,6 +97,7 @@ char * puflib_concat(char const * first, ...)
 
     len = 0;
     va_start(ap, first);
+    va_copy(ap2, ap);
     each = first;
     do {
         len += strlen(each);
@@ -109,15 +110,14 @@ char * puflib_concat(char const * first, ...)
     }
     tail = head;
 
-    va_start(ap, first);
     each = first;
     do {
         size_t each_len = strlen(each);
         strncpy(tail, each, each_len);
         len -= each_len;
         tail += each_len;
-    } while ((each = va_arg(ap, char const *)));
-    va_end(ap);
+    } while ((each = va_arg(ap2, char const *)));
+    va_end(ap2);
 
     *tail = 0;
 
