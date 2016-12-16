@@ -110,13 +110,12 @@ char * puflib_concat(char const * first, ...)
     }
     tail = head;
 
-    each = first;
-    do {
+    while ((each = va_arg(ap2, char const *))) {
         size_t each_len = strlen(each);
         strncpy(tail, each, each_len);
         len -= each_len;
         tail += each_len;
-    } while ((each = va_arg(ap2, char const *)));
+    }
     va_end(ap2);
 
     *tail = 0;
