@@ -1,0 +1,6 @@
+{
+  "name": "Puflib",
+  "tagline": "Modular library for manipulating physically-uncloneable functions",
+  "body": "### Overview\r\n\r\nPhysically unclonable functions (PUFs) return a unique response to a challenge, expose manufacturing variance intrinsic to IC fabrication, and currently require dedicated hardware and proprietary software.\r\n\r\nWith PUFLib, our goal is to develop an open-source, modular library to use PUFs for data protection using Intel x86 and ARM, a variety of “legacy” and novel PUF plug-ins, and a modular design to allow others to contribute. We also plan to provide seal()/unseal() semantics for device-specific sealed storage, and demonstrate to LEG team to support a data loss prevention (DLP)-type solution.\r\n\r\nOur approach includes both legacy and novel sources.\r\n\r\n**Legacy sources:**\r\n\r\n* SRAM (done on ARES)\r\n* Flash (not done in public)\r\n* FPGA (not done under this effort)\r\n\r\n**Novel sources:**\r\n\r\n* DDR RAM (new!)\r\n* SMBus EEPROM (new!)\r\n\r\nThe PUFLib core includes automatic provisioning of hardware-supported PUF sources, error-correcting codes for temp/age variance, and Shamir’s secret sharing for multi-PUF support and additional error tolerance.",
+  "note": "Don't delete this file! It's used internally to help with page regeneration."
+}
